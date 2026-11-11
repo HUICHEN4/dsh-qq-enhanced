@@ -7,11 +7,12 @@ body:
       value: |
         提问前先翻 [TROUBLESHOOTING](../../blob/main/docs/guides/TROUBLESHOOTING.md)，多数连接问题那里有现成答案。
         **贴日志前把 QQ 号、群号、机器路径打码。**
+        装不上 / 连不上 / 不唤醒这类问题，先去 [Discussions 安装踩坑集中帖](https://github.com/HUICHEN4/dsh-qq-enhanced/discussions/1) 看一眼。
   - type: textarea
     id: what
     attributes:
       label: 发生了什么
-      description: 一句话说清现象，比如「控制中心能开，但 QQ 一直显示未连接」。
+      description: 一句话说清现象，比如「控制中心能开，但 QQ 一直显示未连接」。行为类问题（该回不回 / 不该回乱回 / 复读 / 语气怪）也写这里。
     validations:
       required: true
   - type: textarea
@@ -28,7 +29,7 @@ body:
   - type: textarea
     id: logs
     attributes:
-      label: 相关日志
+      label: 相关日志 / 当时那几条消息
       description: 控制中心「日志」窗口或 `state/bridge.log` 里报错前后 20 行左右。
       render: text
   - type: input
