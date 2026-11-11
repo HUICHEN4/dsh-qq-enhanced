@@ -306,7 +306,15 @@
       "minMs": 5000,
       "maxMs": 600000,
       "defaultQuietMs": 8000,
-      "minQuietAfterNewMs": 10000
+      "minQuietAfterNewMs": 10000,
+      "maxPerTurn": 2,
+      "maxMsPerTurn": 90000
+    },
+    "compact": {
+      "enabled": true,
+      "thresholdTokens": 450000,
+      "cooldownMinutes": 120,
+      "idleDelayMs": 20000
     },
     "sticker": {
       "enabled": true,

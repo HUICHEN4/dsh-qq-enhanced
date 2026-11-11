@@ -112,7 +112,7 @@ NapCat 要在它的 WebUI 里开启 WebSocket 服务端 `127.0.0.1:3001`）。�
 
 > ⚠️ 与上游的行为差异：控制台/DSH 设置/QQ 的模式变更都会通知 owner；未经管理通道授权的 closed-agent 不能建会话
 >（从上游升级时若停在 closed-agent，会回落到 reserved2 并告警）；审批改为编号制。详见 CHANGELOG「变更」。
-> 下文「完整启动流程（从零开始）」按「桥接直连 SnowLuma」写，那条路仍然可用，但推荐用上面的控制中心 + 接口平台。
+> 下文「完整启动流程（从零开始）」按「桥接直连 NapCat」写（SnowLuma 已停更，老用户仍可照旧，见 [DSH_DEPLOYMENT.md](docs/DSH_DEPLOYMENT.md) 第 4 节）；日常用上面的控制中心 + 接口平台更省事。
 
 ---
 
@@ -263,31 +263,32 @@ node scripts/setup-dsh.mjs
    装完**必须重启 DSH**——preset 与 MCP 只在 DSH 启动时加载。
    跳过这步桥接不会崩，但群聊会话拿不到 `qq-chat` preset，桥接会**拒绝建会话**（有意的安全设计：绝不回退到带 bash/文件工具的默认 preset），表现同样是 QQ 上没反应。
 
-4. **下载并解压 SnowLuma**
-   - 下载：<https://github.com/SnowLuma/SnowLuma/releases/latest> 选 `SnowLuma-v<版本>-win-x64.zip`（完整版，自带 Node 运行时；Lite 版需本机 Node 22.13+）
-   - 解压到任意目录（例如 `C:\SnowLuma`），双击 `launcher.bat`
+4. **装 QQ 后端：NapCat**
+   - Windows：下载 `NapCat.Shell.Windows.OneKey.zip`（<https://github.com/NapNeko/NapCatQQ/releases>），解压到**项目目录之外**（例如 `C:\NapCat`），按压缩包内的说明启动并扫码登录机器人 QQ（OneKey 版通常是双击 `launcher.bat`，以包内 README 为准）
+   - macOS：Mac 版 QQ + [NapCat Mac 安装器](https://github.com/NapNeko/NapCat-Mac-Installer/releases)
+   - Linux：按 NapCat 官方文档安装（安装脚本或 Docker），无图形界面时用 `xvfb-run … qq --no-sandbox` 启动
+   - 已经在用 SnowLuma（已停更，仅保兼容）的**不用换**，直接跳到第 5 步，把下面配置里的地址填成 SnowLuma 的即可
 
-5. **首次引导（WebUI）+ 填写桥接配置**
-   - 打开启动日志里的 WebUI 地址（README 写的是 `http://localhost:5099`，以你启动日志里实际打印的为准）
-   - 用**启动日志中的初始密码**登录，按引导：同意条款 → 设置密码 → 接入 QQ 进程（扫码登录）
-   - 在 WebUI 里配置 OneBot 连接：开启 **WebSocket 服务端** 和 **HTTP API**，分别记下**端口**（默认 WS `3001`、HTTP `3000`）和 **accessToken**（若配置了）
-   - 回到 `config.json` 填好 `snowluma` 段，并把 `allow.private` / `allow.groups` 换成**你自己的 QQ 号 / 群号**：
+5. **在 NapCat 的 WebUI 里开 OneBot，并填桥接配置**
+   - 打开 `http://127.0.0.1:6099/webui`，登录令牌打印在 NapCat 日志里
+   - 网络配置 → 新建 **WebSocket 服务端**：主机 `127.0.0.1`、端口 `3001`；如果要用 MCP 工具（HTTP GET/POST 工具），再建一个 **HTTP 服务端**：端口 `3000`（令牌可留空，或设了之后填到配置里）
+   - 回到 `config.json` 填好 **`snowluma` 段**（键名是历史遗留，内容填 **NapCat** 的端点），并把 `allow.private` / `allow.groups` 换成**你自己的 QQ 号 / 群号**：
 
      ```json
      "snowluma": {
        "wsUrl": "ws://127.0.0.1:3001",
        "httpUrl": "http://127.0.0.1:3000",
-       "accessToken": "你在 WebUI 里配置的 token（没配置就留空）"
+       "accessToken": "你在 NapCat 里配的 token（没配置就留空）"
      }
      ```
 
-   `wsUrl` 是 OneBot **WebSocket** 端口，`httpUrl` 是 OneBot **HTTP API** 端口（不要填成同一个 WS 端口，否则 MCP 工具会报 HTTP 426）。
+   `wsUrl` 是 OneBot **WebSocket** 端口，`httpUrl` 是 OneBot **HTTP API** 端口（不要填成同一个 WS 端口，否则 MCP 工具会报 HTTP 426）。等价的键还有一处：`snowluma.launcherPath` 只有用 SnowLuma 自动发现时才需要。
 
 6. **启动桥接**
    ```bash
    npm start          # 前台运行（崩溃不自动重启）
    ```
-   看到 `SnowLuma 已连接` 即成功；然后 QQ 上给机器人账号发条消息测试。
+   看到 `QQ 后端（NapCat 4.x）已连接` 即成功；然后 QQ 上给机器人账号发条消息测试。
    Windows 想要「崩溃自动重启」请改用 `start.bat`（见下节）。
 
 ## 运行与运维

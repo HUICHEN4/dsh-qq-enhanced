@@ -23,7 +23,7 @@
 | --- | --- |
 | 项目 | qq-bridge-enhanced：QQ ↔ DeepSeek Harness（DSH）桥接，把一个 QQ 账号变成 DSH agent 驱动的「AI 群友」。基于上游 Derpyu520/qq-bridge v0.2.0-r3（已合并 r4 的修复） |
 | 操作系统 | **Windows 10/11 x64**、**macOS**（Apple Silicon / Intel）或 **Linux**（x64 / arm64，桌面或无图形界面的服务器） |
-| QQ 后端 | **Windows**：SnowLuma（推荐，完整版 `…-win-x64.zip`）或 NapCat（NapCat.Shell）；**macOS**：NapCat（用 NapCat Mac 安装器装进 Mac 版 QQ）。都由用户自行下载、安装、登录；**Linux**：SnowLuma 2.x（`…-linux-x64.tar.gz` / `…-linux-arm64.tar.gz`）或 NapCat |
+| QQ 后端 | **三个平台都用 NapCat**：Windows `NapCat.Shell`、macOS 用 Mac 版 QQ + NapCat Mac 安装器、Linux 用官方脚本或 Docker。都由用户自行下载、安装、登录。**SnowLuma 已停更**，老部署仍可用（第 4.1 / 4.1b 节保留），新装不再推荐 |
 | 接口平台 | 仓库里的 `interface-platform/`：桥接和 QQ 后端之间的统一接入层，由控制中心启停。桥接经它收发（「接入桥接」后） |
 | Node.js | **≥ 22.13**（推荐 22 LTS 的最新小版本）。注意 SnowLuma 2.x 的 **Lite 版需要 Node 24+**（用本机 Node 运行）；用完整版（自带 Node）就不受影响 |
 | DSH | 桌面版或命令行版，**0.2.0-rc.2 或 0.2.1**。0.2.1 桌面版每次启动用随机端口，桥接与控制中心会自动找到它 |
@@ -127,9 +127,11 @@ DSH 必须有可用的模型凭据，否则机器人收到消息后回复「⚠�
 
 ## 4. 检查 QQ 后端（只检查，不安装、不启动）
 
+> 推荐 **NapCat**（Windows 4.3 / macOS 4.2 / Linux 4.3b）。**SnowLuma 已停更**，只保兼容，老部署不用迁移。
+
 **全部由用户本人完成**；部署 agent 只做检查、向用户要信息。
 
-### 4.1 Windows：SnowLuma（推荐）
+### 4.1 Windows：SnowLuma（已停更，仅保兼容）
 
 用户从 https://github.com/SnowLuma/SnowLuma/releases 下载**完整版** `SnowLuma-v<版本>-win-x64.zip`（不是 `-lite`），
 解压到一个**项目目录之外**的文件夹（例如 `D:\SnowLuma`）。第 10 节里用户在控制中心选择这个目录并亲手点「开启 SnowLuma」，
@@ -138,7 +140,7 @@ DSH 必须有可用的模型凭据，否则机器人收到消息后回复「⚠�
 
 需要向用户要的信息：**SnowLuma 解压目录**（第 10 节在页面里选择即可，不用写进配置）。
 
-### 4.1b Linux：SnowLuma（2.0 起正式支持）
+### 4.1b Linux：SnowLuma（已停更，仅保兼容）
 
 用户下载与机器架构匹配的**完整版** `SnowLuma-v<版本>-linux-x64.tar.gz` 或 `…-linux-arm64.tar.gz`（`uname -m` 输出 `aarch64` 就选 arm64），
 解压到项目目录之外（例如 `/opt/snowluma`）。SnowLuma 在 Linux 上接入的是本机运行的 Linux 版 QQ，需要先装好并能登录。
@@ -161,12 +163,12 @@ NapCat 的配置在 QQ 的沙盒容器里：`~/Library/Containers/com.tencent.qq
 **部署 agent 不要从自己的终端去读这个目录**：macOS 会把读取算在启动读取程序的 App 头上，并弹出「访问其他 App 的数据」的授权窗；
 这一步交给控制中心（由用户双击的 App 启动）去读。
 
-### 4.3 Windows：NapCat（可选，代替 SnowLuma）
+### 4.3 Windows：NapCat（推荐）
 
 用户下载 `NapCat.Shell.Windows.OneKey.zip`（https://github.com/NapNeko/NapCatQQ/releases）解压，按 NapCat 文档启动并扫码登录，
 在它的 WebUI 里开启 WebSocket 服务端（`127.0.0.1:3001`）。第 10 节在控制中心「NapCat 设置」里选择它的**启动文件**（.bat / .exe）和 NapCat 目录。
 
-### 4.3b Linux：NapCat（可选）
+### 4.3b Linux：NapCat（推荐）
 
 按 NapCat 官方文档在 Linux 上安装（官方安装脚本或 Docker），扫码登录后在它的 WebUI 里开启 WebSocket 服务端（`127.0.0.1:3001`）。
 无图形界面的服务器上，NapCat 文档里通常是一条 `xvfb-run … qq --no-sandbox` 的启动命令：把它写进一个 `.sh` 脚本，
