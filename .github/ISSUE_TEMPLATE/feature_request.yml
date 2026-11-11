@@ -1,0 +1,21 @@
+name: 功能/改进建议
+description: 想要的新能力，或觉得哪里用着别扭
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: 你现在的麻烦是什么
+      description: 先说场景，再说想要的功能。比如「群里 200 人，@ 我的消息经常漏掉」。
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: 你希望的用法
+      description: 理想情况下它怎么工作？有没有参考的插件/项目？
+  - type: textarea
+    id: cost
+    attributes:
+      label: 你愿意付出的代价（可选）
+      description: 比如「可以多花一点 token」「不想再装依赖」。

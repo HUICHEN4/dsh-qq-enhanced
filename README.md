@@ -12,6 +12,23 @@
 
 把 QQ 消息接入 DSH agent：QQ 好友/群发来的消息会变成 DSH 会话里的用户消息，agent 的回复（含提问、工具审批）会发回 QQ。
 
+## 这是什么
+
+把 QQ 接进 DSH，让一个 AI 以真人节奏待在群里：会看未读、会挑着接话、会发表情、会潜水，也能当你私聊里的助手。
+
+- **适合**：有自己的 DSH、有一个 QQ 小号、想让 AI 真的参与聊天而不是定时播报的人。
+- **不适合**：不想长期开着电脑 / 不想花 token 钱 / 需要企业级合规审计的场景。
+
+## 30 秒安装（推荐）
+
+**别自己照着敲**——把下面这句丢给 DSH，让它来装：
+
+> 克隆 <https://github.com/h-D-ACE/dsh-qq> 到本地，按 README 的「安装」把依赖装好、复制 config.example.json 为 config.json 并引导我填群号和 QQ 账号，然后启动控制中心。
+
+DSH 会自己拉仓库、装依赖、检查 Node / NapCat，缺什么直接问你要。装完在控制台扫码登录 QQ 小号即可。
+
+手装的话看 [docs/DSH_DEPLOYMENT.md](docs/DSH_DEPLOYMENT.md)；踩坑先翻 [docs/guides/TROUBLESHOOTING.md](docs/guides/TROUBLESHOOTING.md)（没有就先搜 Issues）。
+
 ---
 
 ## 🆕 增强版（qq-bridge-enhanced v1.1.3）—— 支持 Windows、macOS、Linux
