@@ -23,6 +23,10 @@
 | [guides/TESTING.md](guides/TESTING.md) | 离线回归清单与需要部署后验证的事项 | ✅ |
 | [guides/DSH_SETUP.md](guides/DSH_SETUP.md) | DSH 端安装说明：`qq-chat` / `qq-chat-v2` preset 与三个 MCP server 怎么挂到目标设备的 DSH 上 | ✅ |
 | [guides/VOICE.md](guides/VOICE.md) | 语音发送全解：独立工具（`voice-tool/` 的图形界面与命令行）、桥接 CLI、AI 工具、控制台面板，以及**工具拆出后的配置解析顺序** | ✅ 2026 整理时已更新（工具移到上一级 `voice-tool/`） |
+| [guides/LONG_RUNNING.md](guides/LONG_RUNNING.md) | 长期运行：什么时候换会话、怎么换、换前怎么交接记忆、成本怎么算、备份哪些文件 | ✅ 2026-11-12 新增 |
+| [guides/TROUBLESHOOTING.md](guides/TROUBLESHOOTING.md) | 新手排障：连不上 QQ、不唤醒、一轮很多步、花钱快、复读、配置不生效、控制台打不开、数据在哪 | ✅ 2026-11-12 新增 |
+| [release/RELEASE_NOTES_v1.1.3.md](release/RELEASE_NOTES_v1.1.3.md) | v1.1.3：人格提示词瘦身、唤醒带上「你最近说过」、等待预算记账修复、发布卫生 | ✅ |
+| [release/POST_v1.1.3.md](release/POST_v1.1.3.md) | 发布帖草稿（简介/装法/已知限制），对外发布时直接用 | ✅ |
 | [guides/TOKEN_USAGE_CONSOLE.md](guides/TOKEN_USAGE_CONSOLE.md) | 控制台「令牌与花费」看板：数据来源、计价口径（峰谷分时）、API、配置 | ✅ |
 | [guides/CONSOLE-UI-TESTING.md](guides/CONSOLE-UI-TESTING.md) | 控制台离线预览（`npm run preview:console`）与离线浏览器回归（`npm run test:console-ui`）怎么用 | ✅ 2026 整理时自 `scripts/` 移入 |
 | [guides/SECURITY_BASELINE.md](guides/SECURITY_BASELINE.md) | **安全基线与威胁模型**：威胁主体、已实现的边界（准入/工具面/出站/控制台/落盘/网络）、已知残余风险、发布前回归清单、改动检查单 | ✅ **改动安全相关代码前必读**（2026-09-20 新增） |

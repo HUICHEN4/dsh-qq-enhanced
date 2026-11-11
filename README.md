@@ -40,7 +40,7 @@ DSH 会自己拉仓库、装依赖、检查 Node / NapCat，缺什么直接问�
 
 | 新功能 | 一句话 | 文档 |
 | --- | --- | --- |
-| **Windows + macOS + Linux** | Windows / Linux 用 SnowLuma 2.x 或 NapCat，macOS 用 NapCat；三个系统都有无窗口启动方式 | [DSH_DEPLOYMENT.md](docs/DSH_DEPLOYMENT.md) |
+| **Windows + macOS + Linux** | 三个系统都用 NapCat 登录（SnowLuma 已停更，仅保兼容）；都有无窗口启动方式 | [DSH_DEPLOYMENT.md](docs/DSH_DEPLOYMENT.md) |
 | **接口平台** | 仓库里的 `interface-platform/`：桥接和 QQ 后端之间的统一接入层，按后端目录自动发现账号，可同时接 SnowLuma 与 NapCat；为以后接微信 / Discord / KOOK 留好接口 | [interface-platform/README.md](interface-platform/README.md) |
 | **控制中心** | 一个本地网页管理桥接、接口平台和 QQ 后端：按钮启停（QQ 后端只由你点击启动）、版本与更新检查、NapCat 扫码二维码直接显示、整体状态栏 | [CONTROL_CENTER.md](docs/guides/CONTROL_CENTER.md) |
 | 跨群认人 | 只认 QQ 号：同一个人在不同群换了群名片也能认出来；同名不同号绝不合并 | [CONTINUITY.md](docs/guides/CONTINUITY.md) |
@@ -71,8 +71,8 @@ DSH 会自己拉仓库、装依赖、检查 Node / NapCat，缺什么直接问�
 ### 部署（无窗口版）
 
 需要：Node.js ≥ 22.13、DSH 桌面版或命令行版（0.2.0-rc.2 / 0.2.1，先在 DSH 里配好模型账号）、你自己安装并能登录的 QQ 后端
-（**Windows**：SnowLuma 完整版或 NapCat.Shell；**macOS**：Mac 版 QQ + [NapCat Mac 安装器](https://github.com/NapNeko/NapCat-Mac-Installer/releases)；
-**Linux**（x64 / arm64）：SnowLuma 2.x 完整版（`…-linux-x64.tar.gz` / `…-linux-arm64.tar.gz`，需要本机能运行 Linux 版 QQ）或 NapCat；
+（**Windows**：NapCat.Shell；SnowLuma 已停更，老用户可继续用但不再推荐；**macOS**：Mac 版 QQ + [NapCat Mac 安装器](https://github.com/NapNeko/NapCat-Mac-Installer/releases)；
+**Linux**（x64 / arm64）：NapCat（SnowLuma 已停更）；
 NapCat 要在它的 WebUI 里开启 WebSocket 服务端 `127.0.0.1:3001`）。本项目不下载、不安装 QQ 后端。
 
 **第一次安装**（在项目目录的终端里，只做一次）：
