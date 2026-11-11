@@ -38,7 +38,10 @@ console.log('## 乱码机制（字节级）');
 }
 
 console.log('## chcp 可用性');
-{
+if (process.platform !== 'win32') {
+  // chcp 是 Windows 控制台命令；Linux/macOS 上不存在，属于环境不适用，不是代码缺陷。
+  console.log(`  ⏭  跳过：chcp 是 Windows 命令，当前平台 ${process.platform}`);
+} else {
   const r = spawnSync('chcp', ['65001'], { encoding: 'latin1', windowsHide: true });
   if (r.error?.code === 'EPERM' || r.error?.code === 'EACCES') {
     // 受限沙箱（DSH workspace-write / 只读）不允许 spawn 捕获输出的子进程。
