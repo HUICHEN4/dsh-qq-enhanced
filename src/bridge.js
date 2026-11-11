@@ -12794,7 +12794,11 @@ async function main() {
     const participationText = formatParticipationV2(st);
     const participationLine = participationText ? `${participationText}\n\n` : '';
     // 称呼纠错（2026-11-04，实测她把 USSR 叫成 master）：身份信息埋得太深，唤醒 prompt 里单独提一句。
-    const masterLine = '【称呼】master 只有一个人：QQ 1234567890（群名片「滚木爱丽丝」）。其他人一律叫「你」或昵称；@ 你、向你提问的人不一定是 master，别叫错。\n\n';
+    // 称呼纠错（2026-11-04）：master 的 QQ 从 config.json 的 ownerQQ 读，别在源码里写死。
+    const ownerQQ = cfg?.ownerQQ ? String(cfg.ownerQQ) : '';
+    const masterLine = ownerQQ
+      ? `【称呼】master 只有一个人：QQ ${ownerQQ}。其他人一律叫「你」或昵称；@ 你、向你提问的人不一定是 master，别叫错。\n\n`
+      : '';
     // 工具纪律（2026-11-04）：每轮多一次工具往返=整段上下文多读一遍，是主要开销来源。
     const toolLine = '【工具纪律】未读消息已经按条列在下面（最多 12 条，标了 partial 才是没给全），默认不用再调 qq_get_unread_messages；只有想确认思考期间又来了什么新消息时才调，且一次拿够（limit 给足），别逐条 qq_get_message_detail 来回问；发完消息桥接已经替你标读并挂好接续，不用再调 qq_mark_read 收尾；收尾默认不用调工具——接续还在盯就继续盯，断开的话桥接会兜底挂 3 分钟观察窗，想改唤醒条件才调一次 qq_set_wake_config（带 throughSeq，标读+设配置一次完成），不要先 qq_mark_read 再来设配置——那是两次往返；qq_wait_for_messages 不是默认动作，只有确实在等对方补话时才用（同一回合最多 2 次或累计 90 秒，超了会返回 budgetExhausted，那就直接收尾，新消息由接续叫醒）；报错别原地重试，同一件事失败两次就换法子，别连着重试；群里出现你不确定含义的词/梗时，可以自己用 mcp__web-search-safe__web_search 去查，不限次数；但只在"这轮回复确实得用到它"时才查，查到就用、别复述来源、别把搜索结果念出来，查不到就直接说不知道或者问对方，别编；同时用 qq_slang_submit 把它提交到管理员的待研究列表（每次唤醒最多提交 1~2 个，拿不准就别交——管理员会人工筛选）。\n\n';
     const noteLine = '【记人】遇到新面孔、被人纠正、或对方明确自述（名字/称呼/脾气/习惯/雷点）时，用 qq_note_person 记一条，一句话说清、不超过120字、同一件事别重复记；没把握就宁可先不记，别为了记而记。\n\n';
