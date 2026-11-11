@@ -1,0 +1,72 @@
+name: 配置求助
+description: config.json 改完了，但机器人不启动、连不上、或者不开口
+labels: [question]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        先翻这两篇，多数问题那里有答案：
+        [CONFIGURATION](https://github.com/HUICHEN4/dsh-qq-enhanced/blob/main/docs/guides/CONFIGURATION.md) ·
+        [TROUBLESHOOTING](https://github.com/HUICHEN4/dsh-qq-enhanced/blob/main/docs/guides/TROUBLESHOOTING.md)
+
+        **贴配置和日志之前，请把 QQ 号、群号、token、本机路径打码。**
+  - type: dropdown
+    id: stuck
+    attributes:
+      label: 卡在哪一步
+      options:
+        - 装依赖 / 启动就报错
+        - 桥接起来了，连不上 QQ 后端
+        - QQ 后端连上了，但群里一直不说话
+        - 会说话，但不像人 / 回得太频繁
+        - 控制台打不开或用不了
+        - 其他（下面说明）
+    validations:
+      required: true
+  - type: textarea
+    id: goal
+    attributes:
+      label: 你想要的效果
+      description: 比如「只在一个群里回，被 @ 才应」「私聊也要能聊」「冷场别硬接」。
+    validations:
+      required: true
+  - type: input
+    id: versions
+    attributes:
+      label: 版本
+      description: 桥接版本（`package.json` 的 version）+ DSH 版本（关于页或 `dsh --version`）。
+      placeholder: qq-bridge-enhanced v1.1.3 / DSH 0.2.2-rc.1
+    validations:
+      required: true
+  - type: input
+    id: backend
+    attributes:
+      label: QQ 后端
+      description: NapCat 还是老 SnowLuma？写版本号。NapCat 的版本在 WebUI 首页能看到。
+      placeholder: NapCat 4.18.42
+    validations:
+      required: true
+  - type: textarea
+    id: config
+    attributes:
+      label: 相关配置（脱敏）
+      description: 只贴改过的那几段就够：`allow`、`snowluma`（历史键名，就是 QQ 后端端点）、`socialV2`。token 和真实号码请换成 xxx。
+      render: json
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: 日志
+      description: 桥接日志里最后 20 行左右，或控制台里报错的那几行。没有就写「无」。
+    validations:
+      required: true
+  - type: checkboxes
+    id: checked
+    attributes:
+      label: 已排查（能确认的打勾）
+      options:
+        - label: 已按 README 跑完 `pnpm install`
+        - label: 群号 / QQ 号已加进 `config.json` 的白名单
+        - label: QQ 后端（NapCat）已经登录，WebUI 能打开
+        - label: 重启过桥接（改配置后不重启不生效）
