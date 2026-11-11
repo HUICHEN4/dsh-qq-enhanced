@@ -136,6 +136,17 @@ QQ 消息 ──► SnowLuma / NapCat（OneBot v11 WS，可经接口平台）─
 
 ## 项目展示
 
+### 在群里说话（本仓库的人设与活人模式）
+
+![Alice 在群里接话](docs/assets/alice-chat.png)
+
+### 控制中心（上游 qq-bridge 原版界面）
+
+![控制中心](docs/assets/control-center.png)
+
+> 控制中心、接口平台这些界面来自上游 [Derpyu520/qq-bridge](https://github.com/Derpyu520/qq-bridge)，不是本仓库开发的；本仓库的改动集中在人格提示词、唤醒与等待逻辑、记忆交接、文档与测试/CI。截图里的 QQ 号与群友昵称已打码。
+
+
 📽️ [AI 仿真群友 - 项目介绍视频](https://github.com/Derpyu520/qq-bridge/releases/download/v0.1.5/project-intro.mp4)（约 11 MB，原版仓库 v0.1.5 的 Release 附件）
 
 > 视频由原版仓库的 **Release 附件**托管，不在本仓库里——只想安装桥接的人不必再下载这 11 MB。内容是原版的功能介绍，增强版新增的功能见上面的表格。
