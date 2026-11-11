@@ -98,7 +98,7 @@ NapCat 要在它的 WebUI 里开启 WebSocket 服务端 `127.0.0.1:3001`）。�
    Linux：服务启动后打开 `http://127.0.0.1:3099/#t=<state/control-center-token 的内容>`（有桌面时也可以双击「QQ Bridge 控制中心」启动项）；
    服务器上从别的电脑访问，先 `ssh -L 3099:127.0.0.1:3099 <服务器>` 转发。
 2. **接口平台 → 概览**，在后端卡片上点「开启」：
-   - Windows / Linux · SnowLuma：先在「接入实例 → 本机 SnowLuma 程序」里「浏览…」选中 SnowLuma 目录，再点「开启 SnowLuma」，第一次在它的 WebUI 里扫码；
+   - Windows / Linux · SnowLuma（**已停更，新装请用 NapCat**）：先在「接入实例 → 本机 SnowLuma 程序」里「浏览…」选中 SnowLuma 目录，再点「开启 SnowLuma」，第一次在它的 WebUI 里扫码；
    - NapCat：点「开启 NapCat」（Windows / Linux 先在「管理 NapCat 程序 → NapCat 设置」里选启动文件，Linux 再选 NapCat 目录）；要扫码时卡片上直接显示二维码。
 3. **接口平台 → 设置**，点「接入桥接」。
 4. **桥接** 标签点「启动桥接」。底部状态栏全绿（接口平台「1 账号就绪 · 桥接已接入」、QQ「在线 <机器人>」、DSH「已就绪」）即完成。

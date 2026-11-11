@@ -1,5 +1,8 @@
 # 常见问题排查
 
+> **SnowLuma 已停更（2026-11）**：新装请按 [README](../../README.md) 用 **NapCat**。`config.json` 里的 `snowluma` 段是**历史键名**，现在填的是 QQ 后端（NapCat）的 OneBot 端点。本文中 SnowLuma 专有的细节只对已在用 SnowLuma 的老部署有效。
+
+
 按症状查。每条都是「看到什么 → 查哪里 → 改什么」。
 
 ## 1. QQ 连不上

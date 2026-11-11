@@ -297,13 +297,14 @@
           <div id="snowSection">
             <div class="card-head" style="border-top:1px solid var(--line)">
               <span class="dot" id="snowDot"></span>
-              <h3 id="snowTitle">SnowLuma 程序（由你亲手启停）</h3>
+              <h3 id="snowTitle">SnowLuma 程序（已停更 · 仅老部署）</h3>
               <span class="badge" id="snowState">未选择目录</span>
               <span class="grow"></span>
               <button class="primary" id="snowStart" disabled>启动 SnowLuma</button>
               <button class="danger" id="snowStop" disabled>停止 SnowLuma</button>
             </div>
             <div id="snowPick" class="empty-state">
+              <p class="note" style="margin-bottom:8px">SnowLuma 已停更，新装请用 <b>NapCat</b>（见 README 第 4 步）。这一块只为已在用 SnowLuma 的老部署保留，只有你亲手点击才会启停，桥接和 AI 都不会动它。</p>
               <p>选择你自己下载并解压的 SnowLuma 目录（含 <code>launcher.bat</code>（Windows）或 <code>launcher.sh</code>（Linux）、<code>index.mjs</code> 的那一层）。SnowLuma 不会放进项目里，也不会被自动启动。选择后会同步给接口平台的 SnowLuma 实例。</p>
               <div class="row">
                 <input type="text" id="snowDirInput" placeholder="例如 D:\SnowLuma-v2.0.3-win-x64 或 /opt/SnowLuma-v2.0.3-linux-x64" aria-label="SnowLuma 目录">
@@ -464,7 +465,7 @@
     <!-- 设置 -->
     <div id="pview-settings" role="tabpanel" aria-labelledby="ptab-settings" class="card" hidden>
       <div class="card-head"><h2>桥接接入</h2><span class="badge" id="linkState">—</span><span class="grow"></span><button class="primary" id="linkOn">接入桥接</button><button id="linkOff">恢复直连</button></div>
-      <p class="note" style="padding:10px 14px;margin:0">「接入桥接」把桥接 <code>config.json</code> 的 SnowLuma 端点改为接口平台的 OneBot 兼容入口（原值备份在 <code>state\platform-link-backup.json</code>），重启桥接后生效。「恢复直连」按备份还原。两者都不会启停任何进程。</p>
+      <p class="note" style="padding:10px 14px;margin:0">「接入桥接」把桥接 <code>config.json</code> 的 QQ 后端端点（<code>snowluma</code> 段，历史键名）改为接口平台的 OneBot 兼容入口（原值备份在 <code>state\platform-link-backup.json</code>），重启桥接后生效。「恢复直连」按备份还原。两者都不会启停任何进程。</p>
       <div class="card-head" style="border-top:1px solid var(--line)"><h2>平台信息</h2></div>
       <dl class="info">
         <dt>版本</dt><dd id="sVer">—</dd>
@@ -1199,7 +1200,7 @@
     try {
       const r = await api('/api/platform/providers');
       $('addProvider').replaceChildren(...r.providers.map((p) => el('option', { value: p.id, disabled: !p.available, textContent: `${p.name}${p.available ? '' : '（尚未提供）'}` })));
-    } catch (e) { $('addProvider').replaceChildren(el('option', { value: 'snowluma', textContent: 'SnowLuma（OneBot v11）' })); toast(e.message, 'bad'); }
+    } catch (e) { $('addProvider').replaceChildren(el('option', { value: 'snowluma', textContent: 'SnowLuma（OneBot v11 · 已停更）' })); toast(e.message, 'bad'); }
   };
   $('addCancel').onclick = () => $('instAddPanel').classList.remove('show');
   $('addGo').onclick = async () => {
@@ -1208,7 +1209,7 @@
     if (r) { $('instAddPanel').classList.remove('show'); for (const id of ['addId', 'addWs', 'addToken', 'addHome']) $(id).value = ''; selectedInst = body.id; pref.set('inst', body.id); }
   };
   $('linkOn').onclick = async () => {
-    if (!await confirmBox('接入桥接', '把桥接 config.json 的 SnowLuma 端点改为接口平台的兼容入口（原值会备份）。\n重启桥接后生效；之后接口平台必须保持运行，机器人才能收发。', '接入')) return;
+    if (!await confirmBox('接入桥接', '把桥接 config.json 的 QQ 后端端点（snowluma 段）改为接口平台的兼容入口（原值会备份）。\n重启桥接后生效；之后接口平台必须保持运行，机器人才能收发。', '接入')) return;
     const r = await act(() => api('/api/platform/link-bridge', { enabled: true }), '已接入。重启桥接后生效');
     if (r?.restartNeeded && await confirmBox('现在重启桥接？', '配置要在桥接重启后才生效。', '重启桥接')) act(() => api('/api/bridge/restart', {}), '已重启桥接');
   };

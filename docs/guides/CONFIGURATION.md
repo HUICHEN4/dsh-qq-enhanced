@@ -1,5 +1,8 @@
 # 配置说明（v0.3.0 起新增的字段）
 
+> **SnowLuma 已停更（2026-11）**：新装请按 [README](../../README.md) 用 **NapCat**。`config.json` 里的 `snowluma` 段是**历史键名**，现在填的是 QQ 后端（NapCat）的 OneBot 端点。本文中 SnowLuma 专有的细节只对已在用 SnowLuma 的老部署有效。
+
+
 原版字段（`dsh.*`、`snowluma.*`、`allow/deny`、`social*`、`slang` 等）的说明见 [../../README.md](../../README.md)「安装与配置」，含义未变。
 本文只列 v0.3.0 起新增的配置段、工具开关和状态文件。所有字段都可省略，省略即取下表默认值；**默认值都是安全的**。
 修改 `config.json` 后需要重启桥接；修改 `socialV2.tools.*` 还需要重启 DSH（MCP 工具清单在 DSH 启动时读取）。

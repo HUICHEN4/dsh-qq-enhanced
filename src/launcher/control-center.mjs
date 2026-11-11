@@ -477,7 +477,7 @@ export async function startControlCenter({ open = true, port: portOverride = nul
   // ── 固定命令集 ──────────────────────────────────────────────────────────────
   const HELP = [
     '可用命令（不是系统终端，只能执行下面这些）：',
-    '  status                     桥接当前模式、级别、DSH/SnowLuma 连通情况',
+    '  status                     桥接当前模式、级别、DSH/QQ 后端连通情况',
     '  mode <chat|reserved|reserved2|closed-agent> [L1|L2|L3] [TOTP]   切换模式（同控制台规则：L3 要 TOTP）',
     '  panic                      紧急关闭：立即回到安全模式',
     '  approvals                  查看待审批',
@@ -485,7 +485,7 @@ export async function startControlCenter({ open = true, port: portOverride = nul
     '  reconcile                  立刻重新对账群成员名单',
     '  bridge start|stop|restart  启停桥接',
     '  platform start|stop|restart  启停接口平台',
-    '  snowluma start|stop        启停 SnowLuma',
+    '  snowluma start|stop        启停 SnowLuma（已停更，仅老部署）',
     '  napcat start|stop          启停 NapCat',
     '  clear                      清空本页面的显示（不删除日志文件）',
   ].join('\n');

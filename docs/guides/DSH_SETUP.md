@@ -1,5 +1,8 @@
 # DSH 端安装说明（本机或另一台设备）
 
+> **SnowLuma 已停更（2026-11）**：新装请按 [README](../../README.md) 用 **NapCat**。`config.json` 里的 `snowluma` 段是**历史键名**，现在填的是 QQ 后端（NapCat）的 OneBot 端点。本文中 SnowLuma 专有的细节只对已在用 SnowLuma 的老部署有效。
+
+
 `qq-bridge` 仓库本身包含桥接、控制台和插件，但 **DSH 端的两个聊天模式（`qq-chat` / `qq-chat-v2`）以及 MCP 挂载** 不在仓库根目录，需要通过本说明安装到目标设备的 DSH 环境中。
 
 ## 安装步骤
