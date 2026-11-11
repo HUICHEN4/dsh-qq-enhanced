@@ -1,5 +1,9 @@
 # QQ ↔ DeepSeek Harness 桥接
 
+[![license](https://img.shields.io/github/license/h-D-ACE/dsh-qq)](LICENSE)
+[![release](https://img.shields.io/github/v/release/h-D-ACE/dsh-qq)](https://github.com/h-D-ACE/dsh-qq/releases)
+[![audit](https://github.com/h-D-ACE/dsh-qq/actions/workflows/audit.yml/badge.svg)](https://github.com/h-D-ACE/dsh-qq/actions/workflows/audit.yml)
+
 **支持系统：Windows · macOS · Linux**（qq-bridge-enhanced v1.1.3 · 仓库 <https://github.com/h-D-ACE/dsh-qq>）
 
 **English**: [README.en.md](README.en.md) | **中文**: [README.md](README.md)

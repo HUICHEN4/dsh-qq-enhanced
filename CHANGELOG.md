@@ -3,6 +3,16 @@
 本仓库（qq-bridge-enhanced）基于上游 [Derpyu520/qq-bridge](https://github.com/Derpyu520/qq-bridge) `v0.2.0-r3`。
 上游更早的版本历史见 [docs/guides/DSH_020_ADAPTATION.md](docs/guides/DSH_020_ADAPTATION.md) 与上游 Release 页面。
 
+## v1.1.3 —— 2026-11-12
+
+**人格提示词瘦身（1,647→865 字）**、**唤醒带上「你最近说过」**、**等待预算记账修复**、**发布卫生**。
+发布说明：[docs/release/RELEASE_NOTES_v1.1.3.md](docs/release/RELEASE_NOTES_v1.1.3.md)。
+
+### 升级注意（从 v1.1.2）
+- 保留 `config.json`、`state/`、`roles/`、`audio/`；执行 `pnpm install --frozen-lockfile`（或 `npm ci`）。
+- 改过 `dsh/agent-presets/` 的话，先 `node scripts/build-agent-preset-patches.mjs` 再重启 DSH。
+- `config.json` 不再入库；新装从 `config.example.json` 复制。
+
 ## v1.1.2 —— 2026-10-29
 
 **按会话（群 / 私聊）分别设置人格卡**、**断线期间错过的消息恢复后补收**。
