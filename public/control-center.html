@@ -162,7 +162,7 @@
   <span class="spacer"></span>
   <span class="badge" id="overallBadge" title="总体状态">总体 —</span>
   <button class="danger solid" id="panicBtn" title="立即回到安全模式（L0 群友模式），停止运维 Agent">紧急关闭</button>
-  <button class="ghost" id="exitBtn" title="先停止由控制中心启动的桥接、接口平台与 SnowLuma，再退出控制中心">退出控制中心</button>
+  <button class="ghost" id="exitBtn" title="先停止由控制中心启动的桥接、接口平台与 NapCat，再退出控制中心">退出控制中心</button>
 </header>
 
 <!-- 顶部大标签：切换只改变显示，不启停、不重连任何模块 -->
@@ -484,7 +484,7 @@
 <footer id="statusBar">
   <span class="chip"><span class="dot" id="sbBridgeDot"></span><b>桥接</b><span id="sbBridge">—</span></span>
   <span class="chip"><span class="dot" id="sbPlDot"></span><b>接口平台</b><span id="sbPl">—</span></span>
-  <span class="chip" title="经接口平台接入的 QQ 后端实例（NapCat / SnowLuma 等）；桥接直连时显示直连的 SnowLuma"><span class="dot" id="sbBackDot"></span><b>接入后端</b><span id="sbBack">—</span></span>
+  <span class="chip" title="经接口平台接入的 QQ 后端实例（NapCat）；桥接直连时显示直连的 NapCat"><span class="dot" id="sbBackDot"></span><b>接入后端</b><span id="sbBack">—</span></span>
   <span class="chip"><span class="dot" id="sbQQDot"></span><b>QQ</b><span id="sbQQ">—</span></span>
   <span class="chip"><span class="dot" id="sbDshDot"></span><b>DSH</b><span id="sbDsh">—</span></span>
   <span class="chip"><b>模式</b><span id="sbMode">—</span></span>
@@ -769,7 +769,7 @@
     setDot($('bridgeDot'), bRun ? (st ? 'on' : 'warn') : (h.bridgeExternal ? 'warn' : ''));
     const bText = bRun ? `运行中 · PID ${b.pid} · ${fmtDur(b.uptimeMs)}${b.restarts ? ` · 已自动重启 ${b.restarts} 次` : ''}` : (b.restartPending ? '等待自动重启…' : (h.bridgeExternal ? '外部运行中' : (b.lastExit ? `已停止（退出码 ${b.lastExit.code ?? '—'}）` : '未启动')));
     $('bridgeState').textContent = bText;
-    $('bridgeRoute').textContent = pl.link.viaPlatform ? '路径：经接口平台' : '路径：直连 SnowLuma';
+    $('bridgeRoute').textContent = pl.link.viaPlatform ? '路径：经接口平台' : '路径：直连 QQ 后端';
     $('bridgeStart').disabled = bRun || h.bridgeExternal;
     $('bridgeStop').disabled = !bRun && !b.restartPending;
     $('bridgeRestart').disabled = !bRun;
@@ -784,15 +784,13 @@
     $('consoleManual').href = `http://127.0.0.1:${h.consolePort || 3100}/?manual=1`;
   }
 
-  // 平台没运行时，控制中心读不到平台的实例（它不读平台的文件），只列出本机 SnowLuma 程序，保证仍能亲手启停 SnowLuma
-  const LOCAL_SNOW = { id: '本机 SnowLuma 程序', provider: 'snowluma', providerName: 'SnowLuma（本机程序）', management: 'hosted', local: true, upstream: {}, links: [] };
+  // 平台没运行时，控制中心读不到平台的实例（它不读平台的文件），只列本机 NapCat 程序占位项，保证仍能亲手启停 NapCat
   const LOCAL_NAP = { id: '本机 NapCat 程序', provider: 'napcat', providerName: 'NapCat（本机程序）', management: 'hosted', local: true, upstream: {}, links: [] };
-  // SnowLuma 有 Windows 与 Linux 版（2.0 起正式支持 Linux）：macOS 不列本机 SnowLuma 占位项。
   const SNOW_OS = ['win32', 'linux'];
   // NapCat 程序区要始终找得到：平台没运行、或平台里还没有 NapCat 实例时，列一个「本机 NapCat 程序」占位项。
   function instancesOf(pl) {
-    const list = [...(pl.overview?.instances ?? (SNOW_OS.includes(S?.os) ? [LOCAL_SNOW] : []))];
-    if ((S?.os === 'darwin' || S?.napcat?.info?.ok || S?.napcat?.running) && !list.some((i) => i.provider === 'napcat')) list.push(LOCAL_NAP);
+    const list = [...(pl.overview?.instances ?? [])];
+    if (!list.some((i) => i.provider === 'napcat')) list.push(LOCAL_NAP);
     return list;
   }
   // 从任何地方跳到 NapCat 程序区（接口平台 → 接入实例 → NapCat 实例）
@@ -823,8 +821,8 @@
     $('tFaulty').textContent = up ? String(faulty) : '—';
     $('tRecv').textContent = up ? fmtAgo(ov.lastReceiveAt) : '—';
     $('tSend').textContent = up ? fmtAgo(ov.lastSendAt) : '—';
-    $('tLink').textContent = pl.link.viaPlatform ? '经接口平台' : '直连 SnowLuma（未接入）';
-    $('plSupport').textContent = ov?.support?.note ?? 'M1：QQ 经 SnowLuma（Windows / Linux）或 NapCat（macOS / Windows / Linux）接入。自研 Mac 原生 QQ（M3）与其他平台尚未提供。';
+    $('tLink').textContent = pl.link.viaPlatform ? '经接口平台' : '直连 QQ 后端（未接入）';
+    $('plSupport').textContent = ov?.support?.note ?? 'M1：QQ 经 NapCat 接入。自研 Mac 原生 QQ（M3）与其他平台尚未提供。';
 
     // 实例列表
     const insts = instancesOf(pl);
@@ -842,7 +840,7 @@
     });
     list.replaceChildren(...items);
     if (!insts.length) list.replaceChildren(el('li', { className: 'note', textContent: up ? '还没有实例' : (SNOW_OS.includes(S.os) ? '接口平台未运行' : '接口平台未运行。macOS 上 QQ 经 NapCat 接入：先自己安装并启动 NapCat（开启 WebSocket 服务端），再启动接口平台。') }));
-    $('instProvidersNote').textContent = '可用：SnowLuma（Windows / Linux）、NapCat（macOS / Windows / Linux）。尚未提供：macOS 原生 QQ 接入、Discord、KOOK、WeChat。';
+    $('instProvidersNote').textContent = '可用：NapCat（macOS / Windows / Linux）。尚未提供：macOS 原生 QQ 接入、Discord、KOOK、WeChat。';
     renderInstDetail(insts.find((i) => i.id === selectedInst), up);
     renderAccounts(ov, up);
     renderSettings(pl, ov);
@@ -885,7 +883,7 @@
 
   function renderAccounts(ov, up) {
     const accs = ov?.accounts ?? [];
-    $('acctEmpty').textContent = !up ? '接口平台未运行。' : accs.length ? '' : '还没有账号。SnowLuma 登录后，实例连上即会出现。';
+    $('acctEmpty').textContent = !up ? '接口平台未运行。' : accs.length ? '' : '还没有账号。NapCat 登录后，实例连上即会出现。';
     const L = ['coreRunning', 'backendReachable', 'loggedIn', 'ioReady', 'bridgeEnabled'];
     const names = { coreRunning: '核心运行', backendReachable: '后端可连接', loggedIn: '账号已登录', ioReady: '收发就绪', bridgeEnabled: '桥接已启用' };
     $('acctRows').replaceChildren(...accs.map((a) => {
@@ -918,7 +916,7 @@
 
   function renderSettings(pl, ov) {
     const link = pl.link;
-    $('linkState').textContent = link.viaPlatform ? '已接入（经接口平台）' : '未接入（直连 SnowLuma）';
+    $('linkState').textContent = link.viaPlatform ? '已接入（经接口平台）' : '未接入（直连 QQ 后端）';
     $('linkOn').disabled = link.viaPlatform || !S.health.config.valid;
     $('linkOff').disabled = !link.viaPlatform;
     $('sVer').textContent = ov ? `v${ov.version}` : '—（未运行）';
@@ -976,8 +974,8 @@
   }
 
   // 接入后端开启卡：每个可用的提供方一张，互相独立
+  // 只列 NapCat：桥接和接口平台都走 NapCat（SnowLuma 后端已不再使用）
   const BACKENDS = [
-    { id: 'snowluma', name: 'SnowLuma', os: 'Windows / Linux' },
     { id: 'napcat', name: 'NapCat', os: 'macOS / Windows / Linux' },
   ];
   function renderBackends() {
@@ -988,19 +986,13 @@
       const okLinks = links.filter((l) => l.state === 'open' && l.reason !== 'auth_failed').length;
       const ready = accs.filter((a) => inst && a.instance === inst.id && a.health.ioReady);
       let prog; let progKind = ''; let unavailable = null;
-      if (b.id === 'snowluma') {
-        const sl = S.snowluma;
-        if (!SNOW_OS.includes(S.os)) { prog = 'SnowLuma 只有 Windows / Linux 版，本机不能运行（可以连接别处运行的 SnowLuma）'; unavailable = true; }
-        else if (sl.running) { prog = '运行中（控制中心启动）'; progKind = 'on'; }
-        else if (S.health.snowlumaPort) { prog = '外部运行中'; progKind = 'warn'; }
-        else prog = sl.info?.ok ? '未运行' : '未选择目录';
-      } else {
+      {
         const n = S.napcat;
         if (n.running) { prog = '运行中（控制中心启动）'; progKind = 'on'; }
         else if (n.external) { prog = '外部运行中'; progKind = 'warn'; }
         else prog = n.info.ok ? '未运行' : `不能启动：${n.info.error}`;
       }
-      const on = !!inst?.connected || (b.id === 'napcat' ? S.napcat.running : S.snowluma.running);
+      const on = !!inst?.connected || S.napcat.running;
       const card = el('div', { className: `bcard${on ? ' on' : ''}` });
       const d = el('span', { className: 'dot' }); setDot(d, ready.length ? 'on' : on ? 'warn' : '');
       card.append(el('div', { className: 'bhead' }, d, el('h3', { textContent: b.name }), el('span', { className: 'badge', textContent: b.os })));
@@ -1012,15 +1004,13 @@
       if (inst?.discoveryError) row('目录', `${inst.discoveryError} —— 已连上的账号不受影响；macOS 上多半是「访问其他 App 的数据」被拒：在 系统设置 › 隐私与安全性 › App 管理/其他 App 的数据 里允许启动控制中心的程序（终端）`);
       card.append(dl);
       const btn = el('button', { className: `bbtn ${on ? 'danger' : 'primary'}`, textContent: on ? `关闭 ${b.name}` : `开启 ${b.name}` });
-      // 本机不能运行的后端不提供一键开启（默认端口会撞上本机其他后端）；要连别处的实例，到「接入实例」里添加并填地址
-      if (unavailable && !on) { btn.disabled = true; btn.title = '要连接别处运行的 SnowLuma：在「接入实例」里添加实例并填写 WS 地址和令牌'; }
       btn.onclick = async () => {
-        if (on && !await confirmBox(`关闭 ${b.name}`, `断开接口平台里 ${b.name} 的实例${(b.id === 'napcat' ? S.napcat.running : S.snowluma.running) ? `，并停止由控制中心启动的 ${b.name}（机器人 QQ 会下线）` : ''}。其他后端不受影响。`, '关闭')) return;
+        if (on && !await confirmBox(`关闭 ${b.name}`, `断开接口平台里 ${b.name} 的实例${S.napcat.running ? '，并停止由控制中心启动的 NapCat（机器人 QQ 会下线）' : ''}。`, '关闭')) return;
         const r = await act(() => api(`/api/backends/${b.id}/${on ? 'off' : 'on'}`, {}));
         if (r?.steps) toast(r.steps.join('；'), 'ok');
       };
       const rowEl = el('div', { className: 'row' }, btn);
-      if (b.id === 'napcat') {
+      {
         // NapCat 等扫码时在卡片上直接提示；任何时候都能一键跳到 NapCat 程序区
         if (S.napcat.qr?.waiting) card.append(el('div', { className: 'qr-alert', textContent: '📱 NapCat 正在等你扫码登录' }));
         const go = el('button', { className: 'bbtn', textContent: S.napcat.qr?.waiting ? '查看登录二维码 →' : '管理 NapCat 程序 →' });
@@ -1040,7 +1030,7 @@
     $('sbBridge').textContent = bRun ? `运行 ${fmtDur(b.uptimeMs)}` : (h.bridgeExternal ? '外部运行' : '未运行');
     setDot($('sbPlDot'), pl.reachable ? ((pl.overview?.counts.accountsReady ?? 0) ? 'on' : 'warn') : 'off');
     $('sbPl').textContent = pl.reachable ? `${pl.overview?.counts.accountsReady ?? 0} 账号就绪${pl.link.viaPlatform ? ' · 桥接已接入' : ''}` : (pl.running ? '启动中' : '未运行');
-    // 接入后端：桥接走接口平台时，看平台里各实例的连接情况（与具体后端无关）；直连时才看 SnowLuma 程序本身
+    // 接入后端：桥接走接口平台时，看平台里各实例的连接情况（与具体后端无关）；直连时看 NapCat 程序本身
     if (pl.link.viaPlatform) {
       const inst = (pl.overview?.instances ?? []).filter((i) => i.enabled !== false);
       const name = (i) => String(i.providerName || i.provider || i.id).split('（')[0];
@@ -1051,8 +1041,9 @@
       $('sbBack').textContent = !pl.reachable ? '平台未运行' : !inst.length ? '未添加实例'
         : inst.map((i) => `${name(i)} ${linked(i) ? '已连接' : i.discoveryError ? '读不到账号目录' : i.connected ? '未连上' : '未开启'}`).join('、');
     } else {
-      setDot($('sbBackDot'), sRun || h.snowlumaPort ? (st?.snowluma?.connected ? 'on' : 'warn') : 'off');
-      $('sbBack').textContent = !hasDir ? 'SnowLuma 直连 · 未选择' : (sRun || h.snowlumaPort) ? (st?.snowluma?.connected ? 'SnowLuma 直连 · 已连接' : 'SnowLuma 直连 · 运行中（桥接未连上）') : 'SnowLuma 直连 · 未运行';
+      const n = S.napcat;
+      setDot($('sbBackDot'), n.running ? (st?.snowluma?.connected ? 'on' : 'warn') : 'off');
+      $('sbBack').textContent = n.running ? (st?.snowluma?.connected ? '直连 NapCat · 已连接' : '直连 NapCat · 运行中（桥接未连上）') : '直连 NapCat · 未运行';
     }
     const sh = st?.snowluma;
     const qqOk = sh && sh.accountOnline !== false && sh.good !== false && sh.connected;
@@ -1065,7 +1056,7 @@
     $('sbDsh').textContent = st ? (st.dshReady ? '已就绪' : h.dsh?.reachable ? '可达，桥接未就绪' : '不可达') : (h.dsh?.reachable ? '可达' : '不可达');
     const level = st?.level || 'L0';
     $('sbMode').textContent = st ? `${st.mode} / ${level}` : '—';
-    $('sbVers').textContent = `控制中心 ${S.version} · 桥接 ${st?.version ?? '—'} · 接口平台 ${pl.overview?.version ?? '—'}${hasDir ? ` · SnowLuma ${sl.info.version}` : ''} · DSH ${h.dsh?.version ?? '—'} · Node ${S.node}`;
+    $('sbVers').textContent = `控制中心 ${S.version} · 桥接 ${st?.version ?? '—'} · 接口平台 ${pl.overview?.version ?? '—'} · DSH ${h.dsh?.version ?? '—'} · Node ${S.node}`;
     // 总体状态：只汇总，不替代各模块的状态
     const issues = [];
     if (!bRun && !h.bridgeExternal) issues.push('桥接未运行');
@@ -1100,7 +1091,7 @@
   $('exitBtn').onclick = async () => {
     const pl = S?.platform;
     const extra = pl?.external ? '\n外部运行的接口平台不受影响。' : '';
-    if (!await confirmBox('退出控制中心', `会先停止由控制中心启动的桥接、接口平台和 SnowLuma（机器人将离线），然后关闭控制中心。不是由控制中心启动的进程不会被停止。${extra}`, '全部退出')) return;
+    if (!await confirmBox('退出控制中心', `会先停止由控制中心启动的桥接、接口平台和 NapCat（机器人将离线），然后关闭控制中心。不是由控制中心启动的进程不会被停止。${extra}`, '全部退出')) return;
     try { await api('/api/exit', {}); } catch {}
     document.body.innerHTML = '<div style="padding:40px;font-size:15px">控制中心已退出，可以关闭这个页面。</div>';
   };
@@ -1189,11 +1180,11 @@
   $('napStart').onclick = () => act(() => api('/api/napcat/start', {}), 'NapCat 已启动。需要扫码时二维码在 NapCat 日志里');
   $('napStop').onclick = async () => { if (await confirmBox('停止 NapCat', '停止后机器人 QQ 会立刻下线，收不到也发不出消息。', '停止 NapCat')) act(() => api('/api/napcat/stop', {}), 'NapCat 已停止'); };
   $('plStart').onclick = () => act(() => api('/api/platform/start', {}), '接口平台已启动');
-  $('plRestart').onclick = async () => { if (await confirmBox('重启接口平台', S?.platform?.link?.viaPlatform ? '桥接经接口平台收发，重启期间机器人收不到也发不出消息。' : '重启期间平台接口不可用（桥接当前直连 SnowLuma，不受影响）。', '重启')) act(() => api('/api/platform/restart', {}), '已重启'); };
-  $('plStop').onclick = async () => { if (await confirmBox('停止接口平台', `${S?.platform?.link?.viaPlatform ? '桥接经接口平台收发，停止后机器人收不到也发不出消息。' : '桥接当前直连 SnowLuma，不受影响。'}\n外部运行的 SnowLuma 不会被停止。`, '停止')) act(() => api('/api/platform/stop', {}), '接口平台已停止'); };
+  $('plRestart').onclick = async () => { if (await confirmBox('重启接口平台', S?.platform?.link?.viaPlatform ? '桥接经接口平台收发，重启期间机器人收不到也发不出消息。' : '重启期间平台接口不可用（桥接当前直连 QQ 后端，不受影响）。', '重启')) act(() => api('/api/platform/restart', {}), '已重启'); };
+  $('plStop').onclick = async () => { if (await confirmBox('停止接口平台', `${S?.platform?.link?.viaPlatform ? '桥接经接口平台收发，停止后机器人收不到也发不出消息。' : '桥接当前直连 QQ 后端，不受影响。'}\n外部运行的 NapCat 不会被停止。`, '停止')) act(() => api('/api/platform/stop', {}), '接口平台已停止'); };
   $('plAuto').onchange = (e) => act(() => api('/api/platform/auto-restart', { enabled: e.target.checked }));
   $('idConnect').onclick = () => act(() => api(`/api/platform/instances/${selectedInst}/connect`, {}), '已连接');
-  $('idDisconnect').onclick = async () => { if (await confirmBox('断开实例', `只断开 ${selectedInst} 及其账号的通信连接，其他实例不受影响；不会停止 SnowLuma 进程。`, '断开')) act(() => api(`/api/platform/instances/${selectedInst}/disconnect`, {}), '已断开'); };
+  $('idDisconnect').onclick = async () => { if (await confirmBox('断开实例', `只断开 ${selectedInst} 及其账号的通信连接，其他实例不受影响；不会停止 NapCat 进程。`, '断开')) act(() => api(`/api/platform/instances/${selectedInst}/disconnect`, {}), '已断开'); };
   $('idSave').onclick = async () => {
     const up = { wsUrl: $('idWs').value.trim(), homeDir: $('idHome').value.trim() };
     if ($('idToken').value) up.accessToken = $('idToken').value;
@@ -1222,7 +1213,7 @@
     if (r?.restartNeeded && await confirmBox('现在重启桥接？', '配置要在桥接重启后才生效。', '重启桥接')) act(() => api('/api/bridge/restart', {}), '已重启桥接');
   };
   $('linkOff').onclick = async () => {
-    if (!await confirmBox('恢复直连', '按备份还原桥接直连 SnowLuma 的配置，重启桥接后生效。', '恢复')) return;
+    if (!await confirmBox('恢复直连', '按备份还原桥接直连的原配置，重启桥接后生效。', '恢复')) return;
     const r = await act(() => api('/api/platform/link-bridge', { enabled: false }), '已恢复直连。重启桥接后生效');
     if (r?.restartNeeded && await confirmBox('现在重启桥接？', '配置要在桥接重启后才生效。', '重启桥接')) act(() => api('/api/bridge/restart', {}), '已重启桥接');
   };

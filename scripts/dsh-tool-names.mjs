@@ -18,7 +18,9 @@
 //   ③ YAML patch 里的 `toolName: X` 行（任意层级 *.patch.yml，含 presets/ 子目录）
 import fs from 'node:fs';
 import path from 'node:path';
-import { dshModulesDir } from './dsh-modules.mjs';
+import { createRequire } from 'node:module';
+import { dshModulesDir, dshHome } from './dsh-modules.mjs';
+import { findAppAsar, openAsar } from './asar-reader.mjs';
 
 /** 名字形态：小写字母开头，允许下划线与连字符，长度合理。 */
 export const TOOL_NAME_RE = /^[a-z][a-z0-9_-]{1,40}$/;
@@ -33,6 +35,42 @@ export function dshPluginDirs() {
   const home = process.env.DSH_HOME
     || (process.env.USERPROFILE ? path.join(process.env.USERPROFILE, '.dsh') : null);
   return [home ? path.join(home, 'plugins') : null].filter((p) => p && fs.existsSync(p));
+}
+
+/**
+ * profile 里安装的 bundle/插件包（dsh-ops、dsh-soul-md、dsh-vision-router…）。
+ * 它们注册的工具（ops_*、memory_*、soul_*、vision_*）既不在 DSH 自带包里，
+ * 也不在 DSH_HOME/plugins 里，只在 profile 的 node_modules——所以按
+ * package.json 的 `dsh.profile.bundles` 名单逐个解析，不盲扫整个 node_modules。
+ */
+export function dshBundleDirs() {
+  const home = dshHome();
+  let profiles = [];
+  try {
+    profiles = fs.readdirSync(path.join(home, 'profiles'), { withFileTypes: true })
+      .filter((e) => e.isDirectory()).map((e) => e.name);
+  } catch { /* 无 profiles 目录 */ }
+  const order = [process.env.DSH_PROFILE, 'desktop', 'web', 'default', ...profiles].filter(Boolean);
+  const seen = new Set();
+  for (const profile of order) {
+    if (seen.has(profile)) continue;
+    seen.add(profile);
+    const anchor = path.join(home, 'profiles', profile, 'package.json');
+    if (!fs.existsSync(anchor)) continue;
+    let pkg;
+    try { pkg = JSON.parse(fs.readFileSync(anchor, 'utf8')); } catch { continue; }
+    const bundles = pkg?.dsh?.profile?.bundles ?? [];
+    if (!bundles.length) continue;
+    const req = createRequire(anchor);
+    const dirs = [];
+    for (const name of bundles) {
+      try {
+        dirs.push({ name, dir: path.dirname(req.resolve(`${name}/package.json`)) });
+      } catch { /* 未安装/不暴露 package.json 的包跳过 */ }
+    }
+    if (dirs.length) return dirs;
+  }
+  return [];
 }
 
 function walkFiles(dir, out = [], depth = 0, maxDepth = 5) {
@@ -57,6 +95,50 @@ function extractFromSource(text, source, add) {
   // 独立的一次性工具文件（defineTool 不挂在 .register( 上时的兜底）
   for (const m of text.matchAll(/defineTool\(\{[\s\S]{0,200}?\bname:\s*["']([^"']+)["']/g)) {
     add(m[1], source);
+  }
+  // 纯对象字面量工具定义（dsh-vision-router：`const xTool = { name: 'vision_x', description: … }`
+  // 或 `deepToolDefs.push({ name: 'vision_y', description: … })`，最后统一 ctx.tools.register(def)）。
+  // 必须带 `parameters` 才算工具：技能注册（`{ name: 'official-plugins', description: … }`）
+  // 与 RALPH_META 这类元数据也会命中 name+description，但它们不是工具。
+  const objDef = /(?:=\s*|\.push\(\s*)\{\s*\n\s*name:\s*["']([a-z][a-z0-9_-]{1,40})["']\s*,\s*\n\s*description:/g;
+  for (const m of text.matchAll(objDef)) {
+    const head = text.slice(m.index, m.index + m[0].length + 4000);
+    if (/\bparameters\s*:/.test(head)) add(m[1], source);
+  }
+}
+
+/**
+ * 有些包把工具名在运行时拼出来（dsh-ops：`TOOL_PREFIX = 'ops_'` +
+ * `publicToolName(rawName)`），源码里没有 `ops_bash` 这样的字面量。
+ * 返回该包声明的前缀（`ops_`），没有则 null。
+ */
+export function discoverDynamicPrefix(text) {
+  const m = /\bTOOL_PREFIX\s*=\s*["']([A-Za-z][A-Za-z0-9]*_)["']/.exec(text);
+  return m ? m[1] : null;
+}
+
+const DYNAMIC_PATTERNS = [
+  /\bpublicToolName\(\s*["']([a-z][a-z0-9_]*)["']/g,
+  /\brawName:\s*["']([a-z][a-z0-9_]*)["']/g,
+];
+// `const fileOrder = ['grep', 'glob', …]` —— 能力目录里的裸名字数组。
+const FILE_ORDER_RE = /\bfileOrder\s*=\s*\[([\s\S]{0,1500}?)\]/g;
+const QUOTED_NAME_RE = /["']([a-z][a-z0-9_]*)["']/g;
+// `export const PARAMETERS = { batch: …, result: … }` —— PTC 能力按参数对象键命名。
+const PARAMETERS_RE = /\bconst PARAMETERS\s*=\s*\{([\s\S]*?)\n\};/g;
+const TOP_KEY_RE = /^ {4}([a-z][a-z0-9_]{2,40}):/gm;
+
+/** 按包声明的前缀补全动态拼出的工具名。 */
+export function extractDynamicNames(text, source, add, prefix = discoverDynamicPrefix(text)) {
+  if (!prefix) return;
+  for (const re of DYNAMIC_PATTERNS) {
+    for (const m of text.matchAll(re)) add(prefix + m[1], source);
+  }
+  for (const m of text.matchAll(FILE_ORDER_RE)) {
+    for (const q of m[1].matchAll(QUOTED_NAME_RE)) add(prefix + q[1], source);
+  }
+  for (const m of text.matchAll(PARAMETERS_RE)) {
+    for (const k of m[1].matchAll(TOP_KEY_RE)) add(prefix + k[1], source);
   }
 }
 
@@ -93,9 +175,15 @@ export function collectDshToolNames({ packagesDir, pluginDirs } = {}) {
     roots.push({ dir, filter: null });
   }
 
+  // 记录「磁盘上的 DSH 自带包」是否真的抽到了名字：DSH 0.2.2 起这些包被打进
+  // resources/app.asar，磁盘目录可能只剩空壳/少数包 —— 此时要回退去读 asar，
+  // 否则会把所有真实工具名误判成「假名」。
+  let dshDiskNames = 0;
+
   for (const { dir, filter } of roots) {
     let entries = [];
     try { entries = fs.readdirSync(dir, { withFileTypes: true }); } catch { continue; }
+    const before = names.size;
     for (const e of entries) {
       if (!e.isDirectory()) continue;
       if (filter && !filter.test(e.name)) continue;
@@ -108,8 +196,90 @@ export function collectDshToolNames({ packagesDir, pluginDirs } = {}) {
         else if (/\.patch\.ya?ml$/.test(f)) extractFromPatch(text, e.name, add);
       }
     }
+    if (filter) dshDiskNames = names.size - before;
   }
-  return { names, packages };
+
+  // profile 里安装的 bundle 插件（非 @deepseek-ai 自带包）。
+  // 两遍：先收源码，再从任一文件里认包级 TOOL_PREFIX，最后按前缀补动态名字
+  // （dsh-ops 的 ops_* 是 `publicToolName()` 运行时拼的，字面量扫不到）。
+  for (const { name, dir } of dshBundleDirs()) {
+    packages.push(name);
+    const texts = [];
+    for (const f of walkFiles(dir)) {
+      const isJs = /\.(js|mjs|cjs)$/.test(f) || f.endsWith('.d.ts');
+      const isPatch = /\.patch\.ya?ml$/.test(f);
+      if (!isJs && !isPatch) continue;
+      let text = '';
+      try { text = fs.readFileSync(f, 'utf8'); } catch { continue; }
+      texts.push(text);
+      if (isJs) extractFromSource(text, name, add);
+      else extractFromPatch(text, name, add);
+    }
+    const prefix = texts.map(discoverDynamicPrefix).find(Boolean);
+    if (prefix) {
+      for (const text of texts) extractDynamicNames(text, name, add, prefix);
+    }
+  }
+
+  let origin = 'disk';
+  if (dshDiskNames === 0) {
+    const asarPath = dshAsarPath();
+    if (asarPath) {
+      const asarPackages = scanAsarPackages(asarPath, add);
+      if (asarPackages.length) {
+        packages.push(...asarPackages);
+        origin = 'asar';
+      }
+    }
+  }
+  return { names, packages, origin };
+}
+
+/** DSH 自带包所在的 app.asar 路径（没有安装 asar 的部署返回 null）。 */
+export function dshAsarPath() {
+  if (process.env.DSH_TOOL_ASAR) return process.env.DSH_TOOL_ASAR;
+  try { return findAppAsar(); } catch { return null; }
+}
+
+/**
+ * 从 app.asar 里扫 `dsh/node_modules/@deepseek-ai/dsh-*` 包的工具名。
+ * 只读 `lib/**`、`presets/**` 与 `*.patch.y(a)ml`：工具定义只在这些位置，
+ * 不把整个 asar（几百 MB）逐文件转成字符串。
+ */
+function scanAsarPackages(asarPath, add) {
+  const PREFIX = 'dsh/node_modules/@deepseek-ai/';
+  let asar;
+  try { asar = openAsar(asarPath); } catch { return []; }
+  const files = asar.listFiles((p) => p.startsWith(PREFIX));
+  const scanned = new Set();
+  const packageTexts = new Map();
+  for (const file of files) {
+    const rest = file.slice(PREFIX.length);
+    const slash = rest.indexOf('/');
+    if (slash < 0) continue;
+    const pkg = rest.slice(0, slash);
+    if (!pkg.startsWith('dsh-')) continue;
+    const inner = rest.slice(slash + 1);
+    const isJs = /\.(js|mjs|cjs)$/.test(file) || file.endsWith('.d.ts');
+    const isPatch = /\.patch\.ya?ml$/.test(file);
+    if (!isJs && !isPatch) continue;
+    // 工具定义只在 lib/ 与 presets/ 下；跳过 client/、assets/ 等大目录。
+    if (!/^(lib|presets)\//.test(inner)) continue;
+    let text = '';
+    try { text = asar.readText(file) ?? ''; } catch { continue; }
+    if (!text) continue;
+    if (isJs) extractFromSource(text, pkg, add);
+    else extractFromPatch(text, pkg, add);
+    // 留一份按包分组，供动态前缀（TOOL_PREFIX = 'x_'）二次抽取。
+    if (!packageTexts.has(pkg)) packageTexts.set(pkg, []);
+    packageTexts.get(pkg).push(text);
+    scanned.add(pkg);
+  }
+  for (const [pkg, texts] of packageTexts) {
+    const prefix = texts.map(discoverDynamicPrefix).find(Boolean);
+    if (prefix) for (const text of texts) extractDynamicNames(text, pkg, add, prefix);
+  }
+  return [...scanned];
 }
 
 /** 便利包装：只要名字集合。 */
@@ -127,4 +297,4 @@ export function dshToolNameSet(options) {
 export const DANGER_TOOL_RE = /(pwsh|bash|shell|exec|spawn|process|terminal|pty|read|write|edit|file|fs_|glob|grep|patch|str_replace|subagent|agent_|teammate|workflow|ralph|job|skill|present|goal|plan|todo|memory|snapshot|rollback|incident|plugin|cordis|dsh_|dev_|import|install|reload|inject|stage|config|workspace|session|export|office|slash|command|schedule|voice|speech|team|mcp_resource)/;
 
 /** 明确无害、允许出现在仿真会话 schema 里的模型侧工具。 */
-export const SAFE_MODEL_TOOLS = new Set(['ask_user_question', 'todo_write']);
+export const SAFE_MODEL_TOOLS = new Set(['ask_user_question', 'todo_write', 'compress']);

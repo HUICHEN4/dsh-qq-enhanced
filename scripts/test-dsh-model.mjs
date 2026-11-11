@@ -158,7 +158,7 @@ test('④ 接口：GET 给出目录；POST 校验后写 config.json 并热生效
     assert.equal(got.json.catalogSource, 'dsh');
     assert.equal(got.json.provider, 'deepseek-official', '默认值不变');
     assert.equal(got.json.model, 'deepseek-flash');
-    assert.deepEqual(got.json.options, ['off', 'low', 'high', 'max'], 'off 不再被过滤');
+    assert.deepEqual(got.json.options, ['off', 'low', 'high', 'max', 'none'], 'off 不再被过滤，none 是「不指定」哨兵');
     assert.equal(got.json.providers.length, 2);
     assert.equal(got.json.canSeeImages, true);
     assert.equal(got.json.globalSideEffect, true);
@@ -195,6 +195,15 @@ test('④ 接口：GET 给出目录；POST 校验后写 config.json 并热生效
     assert.equal(keepVision.json.vision, 'yes');
     const noVisionField = await request(port, '/api/dsh/model', 'POST', admin, { provider: 'example-cloud', model: 'example-reasoner', reasoningEffort: 'max' });
     assert.equal(noVisionField.json.vision, 'yes', '没传 vision 时保留原设置');
+
+    // 「不指定」哨兵（上游 none）：归一成空串，selectModel 不带 reasoningEffort
+    const noneSel = await request(port, '/api/dsh/model', 'POST', admin, { provider: 'deepseek-official', model: 'deepseek-flash', reasoningEffort: 'none', vision: 'auto' });
+    assert.equal(noneSel.status, 200);
+    assert.equal(noneSel.json.reasoningEffort, '', 'none 归一为空串');
+    const savedNone = JSON.parse(fs.readFileSync(path.join(h.temp, 'config.json'), 'utf8'));
+    assert.equal(savedNone.dsh.reasoningEffort, '', 'config.json 存空串');
+    await h.ensureSession('group:456');
+    assert.deepEqual(selected.at(-1), { sessionId: 'fixture-1', provider: 'deepseek-official', model: 'deepseek-flash' }, '不指定时不带 reasoningEffort');
 
     // 目录不可用：不能校验就不保存
     catalogUp = false;

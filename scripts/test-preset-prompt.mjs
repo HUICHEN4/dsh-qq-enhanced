@@ -45,7 +45,7 @@ test('一代与二代的硬性不变量清单确实不同（防止又合并成�
 test('真实预设能定位到 persona 的 prefix 块', () => {
   const loc = locatePresetPromptBlock(source);
   assert.ok(loc, '应能定位 prefix 块');
-  assert.equal(loc.lines[loc.keyLine].trim(), 'prefix: >-');
+  assert.match(loc.lines[loc.keyLine].trim(), /^prefix: [|>]-$/);
   assert.ok(loc.blockEnd > loc.keyLine + 1, 'prefix 块应包含内容行');
   assert.ok(loc.entryEnd > loc.blockEnd, 'persona 条目应在 prefix 块之后还有内容');
 });

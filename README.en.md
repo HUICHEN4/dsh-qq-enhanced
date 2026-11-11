@@ -1,10 +1,10 @@
 # QQ ↔ DeepSeek Harness Bridge (qq-bridge-enhanced)
 
-**Supported systems: Windows · macOS · Linux** (qq-bridge-enhanced v1.1.2 · repository <https://github.com/h-D-ACE/dsh-qq>)
+**Supported systems: Windows · macOS · Linux** (qq-bridge-enhanced v1.1.3 · repository <https://github.com/h-D-ACE/dsh-qq>)
 
 **English**: [README.en.md](README.en.md) | **中文**: [README.md](README.md)
 
-> **qq-bridge-enhanced v1.1.2** ([h-D-ACE/dsh-qq](https://github.com/h-D-ACE/dsh-qq)) — a fork of [Derpyu520/qq-bridge](https://github.com/Derpyu520/qq-bridge) v0.2.0-r3 (with the upstream r4 fixes merged in; origin and licensing in [NOTICE.md](NOTICE.md)).
+> **qq-bridge-enhanced v1.1.3** ([h-D-ACE/dsh-qq](https://github.com/h-D-ACE/dsh-qq)) — a fork of [Derpyu520/qq-bridge](https://github.com/Derpyu520/qq-bridge) v0.2.0-r3 (with the upstream r4 fixes merged in; origin and licensing in [NOTICE.md](NOTICE.md)).
 > It turns one QQ account into an "AI group member" driven by DeepSeek Harness (DSH) agents, and runs on **Windows, macOS and Linux**.
 > Most documentation is in Chinese: the step-by-step deployment guide is [docs/DSH_DEPLOYMENT.md](docs/DSH_DEPLOYMENT.md), the changelog is [CHANGELOG.md](CHANGELOG.md),
 > and the documentation index is [docs/README.md](docs/README.md).
@@ -36,7 +36,7 @@ QQ friends/groups become DSH conversations, and agent replies (including questio
 | Backfill after disconnects (v1.1.2) | After the link to QQ drops (computer sleep, NapCat restart…), the bridge fetches the messages it missed through the history API, keeping their original time so the AI knows they are late; commands and confirmation codes in backfilled messages are never executed; failed fetches are retried | [CONFIGURATION.md](docs/guides/CONFIGURATION.md) |
 | Quoted merged forwards (v1.0.3) | Quoting an older merged forward no longer stalls the message for 30 s; the AI can open the quoted forward (nested ones too), results are cached | [CHANGELOG.md](CHANGELOG.md) |
 | DSH model picker | Provider / model / reasoning effort as three linked selects fed by DSH's own model catalog, applied from the next message without a restart; warns about third-party providers (chat content leaves DeepSeek), turns images into text for models that can't see images, and marks unpriced models as estimated | [CONFIGURATION.md](docs/guides/CONFIGURATION.md) |
-| DSH 0.2.1 | Works with DSH 0.2.0-rc.2 and 0.2.1 (v1.1.2 was tested on the 0.2.1-rc.2 desktop app and re-checked on 0.2.1-rc.3); the 0.2.1 desktop app's random port is detected automatically, and the bridge follows it after DSH restarts | [DSH_020_ADAPTATION.md](docs/guides/DSH_020_ADAPTATION.md) |
+| DSH 0.2.1 | Works with DSH 0.2.0-rc.2 and 0.2.1 (v1.1.2 was tested on the 0.2.1-rc.2 desktop app); the 0.2.1 desktop app's random port is detected automatically, and the bridge follows it after DSH restarts | [DSH_020_ADAPTATION.md](docs/guides/DSH_020_ADAPTATION.md) |
 
 ## Deployment (no-window launchers)
 

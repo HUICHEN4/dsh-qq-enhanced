@@ -123,15 +123,17 @@ await test('R2 send-burst 失败路径不再抛 ReferenceError，并回滚发送
 
 // ── R3. 唤醒限频：延后重试而不是丢弃 ────────────────────────────────────────
 await test('R3 命中唤醒限频时安排延后重试，不丢这一枪', async () => {
+  // 用 atMention 而不是 timeout：定时器类唤走在 soft 名额里（观察窗不挤硬名额，属设计），
+  // 硬限频只对 @/名字/提问这类叫醒生效，这条测的是硬限频本身。
   const h = await bridgeHarness({ config: { socialV2: { wake: { maxWakePerMinute: 1 } } } });
   try {
     h.setMode('reserved2');
     const st = h.getSocialV2State('group:456');
     st.wakeTimes.push(Date.now()); // 占满每分钟 1 次的窗口
     const before = h.calls.prompts.length;
-    await h.sendWakePromptV2('group:456', 'timeout');
+    await h.sendWakePromptV2('group:456', 'atMention');
     assert.equal(h.calls.prompts.length, before, '限频期间不得立即投递');
-    assert.ok(st.rateLimitRetryTimer, '必须安排延后重试（直接丢弃会让 timeout 唤醒永久消失）');
+    assert.ok(st.rateLimitRetryTimer, '必须安排延后重试（直接丢弃会让这枪唤醒永久消失）');
     clearTimeout(st.rateLimitRetryTimer);
     st.rateLimitRetryTimer = null;
   } finally { await h.close(); }

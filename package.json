@@ -1,6 +1,6 @@
 {
   "name": "qq-bridge",
-  "version": "1.1.2",
+  "version": "1.1.3",
   "private": true,
   "license": "MIT",
   "description": "qq-bridge enhanced: SnowLuma (OneBot v11 / QQ) ↔ DeepSeek Harness bridge with cross-group identity by QQ number, layered person memory, member-join awareness, and an owner-only QQ admin channel for confirmed mode switching / tiered DSH permissions (TOTP for L3). Based on Derpyu520/qq-bridge v0.2.0-r3. Targets DSH 0.2.0-rc.2.",
@@ -58,7 +58,7 @@
     "privacy-scan": "node scripts/privacy-scan.mjs",
     "diagnose:acl": "node scripts/diagnose-acl.mjs",
     "harden-acl": "node scripts/harden-state-acl.mjs",
-    "test:v030": "node scripts/test-continuity.mjs && node scripts/test-admin-control.mjs && node scripts/test-integration-v030.mjs && node scripts/test-agent-readonly-guard.mjs",
+    "test:v030": "node scripts/test-continuity.mjs && node scripts/test-topic-continuity.mjs && node scripts/test-admin-control.mjs && node scripts/test-integration-v030.mjs && node scripts/test-agent-readonly-guard.mjs",
     "admin:totp-setup": "node scripts/admin-totp-setup.mjs",
     "probe:permission": "node scripts/probe-permission-presets.mjs",
     "probe:member-events": "node scripts/probe-member-events.mjs",
@@ -75,5 +75,8 @@
     "@snowluma/sdk": "^1.14.20",
     "js-yaml": "^4.3.2",
     "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "playwright-core": "^1.64.1"
   }
 }

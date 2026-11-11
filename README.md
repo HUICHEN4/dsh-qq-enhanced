@@ -1,6 +1,6 @@
 # QQ ↔ DeepSeek Harness 桥接
 
-**支持系统：Windows · macOS · Linux**（qq-bridge-enhanced v1.1.2 · 仓库 <https://github.com/h-D-ACE/dsh-qq>）
+**支持系统：Windows · macOS · Linux**（qq-bridge-enhanced v1.1.3 · 仓库 <https://github.com/h-D-ACE/dsh-qq>）
 
 **English**: [README.en.md](README.en.md) | **中文**: [README.md](README.md)
 
@@ -14,7 +14,7 @@
 
 ---
 
-## 🆕 增强版（qq-bridge-enhanced v1.1.2）—— 支持 Windows、macOS、Linux
+## 🆕 增强版（qq-bridge-enhanced v1.1.3）—— 支持 Windows、macOS、Linux
 
 > 本仓库（<https://github.com/h-D-ACE/dsh-qq>）是 [Derpyu520/qq-bridge](https://github.com/Derpyu520/qq-bridge) v0.2.0-r3 的二次开发版本（来源与授权见 [NOTICE.md](NOTICE.md)），已合并上游 r4 的修复。
 > 原版的全部功能（消息桥接、多群白名单、reserved2 二代仿真、QQ 自主工具、人格、控制台、安全守卫、令牌统计、MCP、SnowLuma 健康检查）保持不变；
@@ -45,7 +45,11 @@
 | 按会话设置人格卡（v1.1.2） | 每个群 / 私聊可以单独用一张卡或不挂卡，没单独设置的跟随全局；管理员在 QQ 里发 `/role 名字` / `/role off` / `/role default` 只改当前会话；换卡只唤醒卡真的变了的会话 | [roles/README.md](roles/README.md) |
 | 断线补收（v1.1.2） | 电脑睡眠、NapCat 重启等导致和 QQ 断开过，恢复后用历史消息接口补收错过的消息（带原始时间，AI 知道是迟到的）；补收到的命令和确认码一律不执行；拉取失败会重试 | [CONFIGURATION.md](docs/guides/CONFIGURATION.md) |
 | 引用合并转发（v1.0.3） | 引用一条较早的合并转发时不再卡住整条消息；AI 能打开引用里的转发（含嵌套），读取结果缓存 | [CHANGELOG.md](CHANGELOG.md) |
-| DSH 0.2.1 | 兼容 DSH 0.2.0-rc.2 与 0.2.1（v1.1.2 在 0.2.1-rc.2 桌面版上实测，0.2.1-rc.3 桌面版已复核）；0.2.1 桌面版的随机端口自动识别、DSH 重启后自动跟上 | [DSH_020_ADAPTATION.md](docs/guides/DSH_020_ADAPTATION.md) |
+| DSH 0.2.1 | 兼容 DSH 0.2.0-rc.2 与 0.2.1（v1.1.2 在 0.2.1-rc.2 桌面版上实测）；0.2.1 桌面版的随机端口自动识别、DSH 重启后自动跟上 | [DSH_020_ADAPTATION.md](docs/guides/DSH_020_ADAPTATION.md) |
+| 人格提示词瘦身（v1.1.3） | 【反 AI 味】【保持主体性】【被吐槽时别炸毛】【话说得像人】【该说/不该说】合并成【像人】【立场】两块，删掉互相打架和重复的规则：同一段从 1,647 字降到 865 字 | [roles/README.md](roles/README.md) |
+| 唤醒自带最近发言（v1.1.3） | 每次唤醒在提示里附上最近 3 条自己发过的话，让 AI 自己避开复读同一个开头和句式 | 同上 |
+| 等待预算修复（v1.1.3） | 被权限拦掉的等待不再消耗本轮额度；额度仍是每轮最多 2 次 / 90 秒，`purpose=reply` 的短静默不受限 | [CONFIGURATION.md](docs/guides/CONFIGURATION.md) |
+| 发布卫生（v1.1.3） | `config.json` 不再入库（只留 `config.example.json`）；启动脚本里写死的本机路径改成按脚本位置推算；`interface-platform`、`plugins/qq-mode-console` 版本号与主包对齐 | [PUBLISHING.md](docs/release/PUBLISHING.md) |
 
 ### 部署（无窗口版）
 
@@ -91,7 +95,7 @@ NapCat 要在它的 WebUI 里开启 WebSocket 服务端 `127.0.0.1:3001`）。�
 
 ---
 
-> ⚠️ **当前版本 `v1.1.2`，适配 DSH 0.2.0-rc.2 与 0.2.1**（0.2.1-rc.2 桌面版上实测，0.2.1-rc.3 桌面版已复核；协议面逐项核对：`npm run verify:adaptation`）。
+> ⚠️ **当前版本 `v1.1.3`，适配 DSH 0.2.0-rc.2 与 0.2.1**（0.2.1-rc.2 桌面版上实测；协议面逐项核对：`npm run verify:adaptation`）。
 > 鉴权用 `~/.dsh` 里持久化的浏览器会话签名密钥**离线铸造 Cookie**（DSH 0.1.7 起进程启动 token 只存在于内存、不再落盘）；
 > agent preset 是 `@deepseek-ai/dsh-agent-preset` Cordis 行（由 `setup-dsh.mjs` 写入，旧的 `~/.dsh/.agent-presets/` 目录机制已废）。
 > DSH 0.2.0 时的适配改动（会话待处理队列解析、QQ 安全守卫的工具名单对账等）见 [docs/guides/DSH_020_ADAPTATION.md](docs/guides/DSH_020_ADAPTATION.md)。

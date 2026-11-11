@@ -651,7 +651,7 @@ export async function startControlCenter({ open = true, port: portOverride = nul
       }
       if (req.method === 'POST' && p === '/api/platform/link-bridge') {
         const r = await linkBridge(body.enabled === true);
-        bridge.note(body.enabled === true ? '已把桥接的 SnowLuma 端点改为接口平台的 OneBot 兼容入口（原值已备份）。重启桥接后生效。' : '已恢复桥接直连 SnowLuma 的原配置。重启桥接后生效。');
+        bridge.note(body.enabled === true ? '已把桥接的 SnowLuma 端点改为接口平台的 OneBot 兼容入口（原值已备份）。重启桥接后生效。' : '已恢复桥接直连的原配置。重启桥接后生效。');
         return send(200, { ...r, link: bridgeLinkState(), restartNeeded: bridge.running });
       }
       if (req.method === 'GET' && p === '/api/platform/providers') {

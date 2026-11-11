@@ -69,7 +69,7 @@ export const inject = ['tools']
  *                                        （dev_mode_subagent 会派生 agent）
  *
  * ⚠️ 硬证据：2026-08-29 的一次 **qq-chat-v2 仿真会话**记录下来的工具清单里，
- * 除了 MCP 工具就只有 `ask_user_question`、`todo_write`、`dev_mode_*`、
+ * 除了 MCP 工具就只有 `ask_user_question`、`todo_write`、`compress`、`dev_mode_*`、
  * `dsh_rollback`、`dsh_snapshot`、`incident_resolved`。也就是说
  * **`dsh_snapshot`/`dsh_rollback` 真的进过仿真会话的 schema**——本名单初版漏了它们。
  *
@@ -93,7 +93,7 @@ export const inject = ['tools']
  *   ③ 等于把插件装载权交出去 ⇒ 任意代码执行：
  *      · `plugin_manager`（安装/卸载/启停插件，内部会 spawn pnpm）
  *   ④ 无人值守的自我调度（`dsh-schedule`，0.2.0 起是可选 bundle）：
- *      · `schedule_create` / `schedule_list` / `schedule_update` / `schedule_delete`
+ *      · `schedule_create` / `schedule_list` / `schedule_edit` / `schedule_view`
  */
 const LOCAL_EXECUTION_TOOLS = [
   // shell / 进程
@@ -126,9 +126,23 @@ const LOCAL_EXECUTION_TOOLS = [
   //   ③ 插件装载权（= 任意代码执行）
   'plugin_manager',
   //   ④ 无人值守的自我调度
-  'schedule_create', 'schedule_list', 'schedule_update', 'schedule_delete',
+  'schedule_create', 'schedule_list', 'schedule_edit', 'schedule_view',
   // 已装但当前未进 bundles 的插件（一旦加回就是新口子）
   'dev_mode_set', 'dev_mode_status', 'dev_mode_subagent',
+  // 2026-11-06 针对 DSH 0.2.2-rc.1 重新对账（0.2.1 时代名单之外的新工具面）。
+  //  ① dsh-ops 0.5.0：ops_* 全家（shell、读写、移动/删除、补丁、PDF/表格）
+  'ops_bash', 'ops_discover_tools', 'ops_glob', 'ops_grep', 'ops_inspect_local_file',
+  'ops_read_files', 'ops_result', 'ops_read_pdf', 'ops_read_docx', 'ops_read_table',
+  'ops_replace', 'ops_write_file', 'ops_edit_file', 'ops_diff', 'ops_stat',
+  'ops_copy', 'ops_move', 'ops_remove',
+  //  ② dsh-tool-terminal：交互式终端会话（等于 shell 的另一张皮）
+  'terminal_open', 'terminal_close', 'terminal_list', 'terminal_read', 'terminal_send', 'terminal_signal',
+  //  ③ 0.2.2 新增的会话查询 / git 工作树 / 市场 / 等 agent
+  //     session_* 能读 DSH 会话库（别的会话里可能有凭据与私聊内容），一律不给。
+  'session_search', 'session_trace', 'session_event_read', 'session_event_search', 'session_event_trace',
+  'create_worktree', 'apply_patch', 'read_file', 'plugin_market', 'wait_agent',
+  //  ④ 官方联网工具（QQ 会话走 mcp__web-search-safe__，不需要宿主直连版本）
+  'web_search', 'web_fetch',
 ]
 
 const KNOWN_DANGEROUS_GLOBAL_TOOLS = [
@@ -155,6 +169,17 @@ const KNOWN_DANGEROUS_GLOBAL_TOOLS = [
   'dev_stage_list',
   'dev_stage_promote',
   'dev_uninject_plugin',
+  // 2026-11-06 对账：0.2.2 全局层实际注册、但仿真会话不该有的工具。
+  //  ① soul-md 记忆文件（rewrite 会写盘）与人格卡（soul_update 能永久改人设）
+  'memory_append', 'memory_read', 'memory_rewrite', 'memory_search',
+  'soul_read', 'soul_update',
+  //  ② vision-router 图像能力（materialize/html_screenshot 有写文件与渲染能力）
+  'vision_bootstrap', 'vision_colors', 'vision_crop', 'vision_describe', 'vision_detect',
+  'vision_extract_foreground', 'vision_ground', 'vision_html_screenshot',
+  'vision_long_screenshot_ocr', 'vision_materialize', 'vision_ocr', 'vision_pixel_diff',
+  'vision_present', 'vision_trace',
+  //  ③ 会话 cwd 切换（没必要暴露宿主目录结构）
+  'working_directory',
 ]
 
 // 供 test-preset-local-tools.mjs 导入并与 DSH 真实工具名对账，避免两份名单漂移。
@@ -170,9 +195,15 @@ const SAFE_PREFIXES = [
 
 // 无害模型侧工具：ask_user_question 用于把问题转给管理员/用户，
 // todo_write 仅维护任务列表。若后续 preset 不再挂载这些工具，保留无害。
+// compress：只压缩**本会话上下文**（摘要写回会话日志），不读写文件、不执行命令、
+// 不触网；2026-11-03 放行——长聊时模型能自己提前压缩，省 token 也省窗口。
 const SAFE_EXACT = new Set([
   'ask_user_question',
   'todo_write',
+  'compress',
+  // 2026-11-06：与 compress 同属 billion-context 的纯上下文工具——只动本会话的
+  // 压缩历史/缓存，不读写文件、不执行命令、不触网。
+  'decompress', 'search_context', 'acp_status', 'acp_cache', 'acp_read_original_image',
 ])
 
 /**
@@ -195,7 +226,7 @@ export const OPERATOR_DENY_TOOLS = Object.freeze([
   'send_message', 'interrupt_agent', 'list_agents', 'spawn_teammate',
   'team_task_create', 'team_task_get', 'team_task_list', 'team_task_update',
   'workflow', 'ralph', 'plugin_manager', 'load_workspace_dependencies',
-  'schedule_create', 'schedule_list', 'schedule_update', 'schedule_delete',
+  'schedule_create', 'schedule_list', 'schedule_edit', 'schedule_view',
   'cordis_inspect_list', 'cordis_inspect_query',
   'list_mcp_resources', 'list_mcp_resource_templates', 'read_mcp_resource',
   'dsh_snapshot', 'dsh_rollback', 'incident_resolved',

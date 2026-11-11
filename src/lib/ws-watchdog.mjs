@@ -16,12 +16,13 @@
  * @param {() => boolean} o.isConnected
  * @param {() => Promise<void>|void} o.reconnect
  * @param {(m:string)=>void} [o.log]
+ * @param {string} [o.label] 日志里对 QQ 后端的称呼（直连 SnowLuma 时是 SnowLuma，NapCat 时按实际后端）
  * @param {number} [o.minMs]
  * @param {number} [o.maxMs]
  * @param {(fn:()=>void, ms:number)=>any} [o.setTimer]
  * @param {(t:any)=>void} [o.clearTimer]
  */
-export function createReconnectWatchdog({ isConnected, reconnect, log = () => {}, minMs = 10_000, maxMs = 60_000, setTimer = setTimeout, clearTimer = clearTimeout }) {
+export function createReconnectWatchdog({ isConnected, reconnect, log = () => {}, label = 'QQ 后端', minMs = 10_000, maxMs = 60_000, setTimer = setTimeout, clearTimer = clearTimeout }) {
   let delay = minMs;
   let timer = null;
   let stopped = true;
@@ -46,7 +47,7 @@ export function createReconnectWatchdog({ isConnected, reconnect, log = () => {}
     running = true;
     attempts += 1;
     try {
-      log(`SnowLuma 仍未连接，看门狗第 ${attempts} 次尝试重新连接（下次间隔 ${Math.round(Math.min(maxMs, delay * 2) / 1000)} 秒）`);
+      log(`${label} 仍未连接，看门狗第 ${attempts} 次尝试重新连接（下次间隔 ${Math.round(Math.min(maxMs, delay * 2) / 1000)} 秒）`);
       await reconnect();
     } catch (error) {
       log(`看门狗重连出错：${error?.message ?? error}`);

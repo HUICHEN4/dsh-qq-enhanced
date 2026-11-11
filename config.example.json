@@ -214,32 +214,7 @@
       "crossGroup": true,
       "sendVoice": false,
       "ownerRelay": false,
-      "ownerGroupAccess": false,
-      "recall": false,
-      "qzonePost": false,
-      "qzoneComment": false,
-      "qzoneLike": false,
-      "qzoneRead": false,
-      "setSignature": false,
-      "setNickname": false,
-      "setOnlineStatus": false,
-      "setInputStatus": false,
-      "speak": false
-    },
-    "account": {
-      "persona": "follow",
-      "confirm": {
-        "post": { "owner": true, "proactive": true },
-        "deletePost": { "owner": true, "proactive": true },
-        "comment": { "owner": true, "proactive": true },
-        "signature": { "owner": true, "proactive": true },
-        "nickname": { "owner": true, "proactive": true }
-      },
-      "limits": { "post": 3, "deletePost": 10, "comment": 5, "like": 30, "signature": 5, "nickname": 3 },
-      "commentDelaySeconds": 120,
-      "confirmTtlSeconds": 600,
-      "allowPublic": true,
-      "defaultUgcRight": 4
+      "ownerGroupAccess": false
     },
     "ownerRelay": {
       "maxPerHour": 10,
@@ -285,7 +260,30 @@
       "maxWakePerMinute": 1,
       "maxWakePerHour": 12,
       "noActionLimit": 3,
-      "maxWakeConfigReminders": 2
+      "maxWakeConfigReminders": 2,
+      "topicContinuation": {
+        "enabled": true,
+        "idleWindowMs": 900000,
+        "batchWindowMs": 12000,
+        "silentBatchWindowMs": 60000,
+        "minScore": 0.3,
+        "minHits": 1,
+        "maxTotalMs": 14400000,
+        "anchorTexts": 6,
+        "sleepPhrases": [
+          "去睡了",
+          "我先睡",
+          "先睡了",
+          "睡觉去了",
+          "下潜了",
+          "晚安",
+          "睡了"
+        ],
+        "sleepMs": 14400000,
+        "dailySoftBudgetCny": 2.5,
+        "judgeByModel": true,
+        "maxSilentBatches": 3
+      }
     },
     "send": {
       "burstEnabled": true,

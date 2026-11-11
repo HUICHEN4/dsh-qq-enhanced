@@ -128,6 +128,17 @@ export function createTokenLedger({
   let lastCompactedAt = 0;
   let droppedLines = 0;
 
+  /**
+   * 手动重置水位（毫秒）。控制台「清空账本」之后必须**持久化**这个时间点：
+   * 1. DSH 重连时会重新下发 `projections.tokenUsage`（整条会话日志的累计桶），
+   *    snapshot.records 也会重放，不设水位的话重置前的历史会在下一次重连时原地复活；
+   * 2. 重置之后**不再采信整个会话的累计基线**：那份累计包含重置前的全部历史，
+   *    而重置那一刻快照到的桶可能残缺（晚连上、投影只回了半截），任何相减都会
+   *    在快照偏小时把旧花费重新算回来。所以重置后只按逐轮采样记账，基线行一律忽略。
+   */
+  let resetAt = 0;
+  let resetBaselines = new Map();
+
   function keyOf(sessionId) {
     let key;
     try {
@@ -145,6 +156,23 @@ export function createTokenLedger({
   // ── 载入 ────────────────────────────────────────────────────────────────
   function applyRecord(record, { fromDisk }) {
     if (!record || typeof record !== 'object') return false;
+    // 重置水位行没有 sid，必须在下面校验 sid 之前处理。
+    if (record.k === 'reset') {
+      const rt = Number(record.t);
+      if (Number.isFinite(rt) && rt > 0) {
+        resetAt = rt;
+        resetBaselines = new Map();
+        const saved = record.base && typeof record.base === 'object' ? record.base : {};
+        for (const [savedSid, value] of Object.entries(saved)) {
+          if (!value || typeof value !== 'object') continue;
+          resetBaselines.set(savedSid, {
+            seq: Number.isFinite(Number(value.seq)) ? Number(value.seq) : -1,
+            buckets: normalizeUsage(value.b)
+          });
+        }
+      }
+      return true;
+    }
     const sid = record.sid;
     if (typeof sid !== 'string' || !sid) return false;
     if (record.key) sessionKeys.set(sid, record.key);
@@ -174,6 +202,8 @@ export function createTokenLedger({
     }
 
     if (record.k === 'base') {
+      // 重置之后写入的基线行是「整条会话累计」，会把旧花费带回来；载入时直接丢弃。
+      if (resetAt && t >= resetAt) return false;
       const prev = baselines.get(sid);
       if (prev && prev.seq > seq) return false; // 旧基线不得覆盖新基线
       baselines.set(sid, {
@@ -183,7 +213,8 @@ export function createTokenLedger({
         t,
         model: record.model,
         provider: record.provider,
-        buckets
+        buckets,
+        from: Number.isFinite(Number(record.from)) ? Number(record.from) : undefined
       });
       if (t > (sessionSeen.get(sid) ?? 0)) sessionSeen.set(sid, t);
       return true;
@@ -228,6 +259,8 @@ export function createTokenLedger({
     sessionSeen.clear();
     journalLines = 0;
     droppedLines = 0;
+    resetAt = 0;
+    resetBaselines = new Map();
     let raw;
     try {
       raw = fs.readFileSync(file, 'utf8');
@@ -272,6 +305,11 @@ export function createTokenLedger({
    */
   function compact() {
     const out = [];
+    if (resetAt) {
+      const base = {};
+      for (const [sid, value] of resetBaselines) base[sid] = { seq: value.seq, b: value.buckets };
+      out.push({ k: 'reset', t: resetAt, base });
+    }
     for (const base of baselines.values()) {
       out.push({
         k: 'base', t: base.t, sid: base.sessionId, key: base.key, seq: base.seq,
@@ -396,6 +434,8 @@ export function createTokenLedger({
     // 取不到才回落到「收到时间」，避免机器时钟/重放顺序影响计价。
     const t = Number.isFinite(Number(at)) ? Number(at)
       : (Number.isFinite(Number(event.time)) ? Number(event.time) : now());
+    // 重置水位之前的事件不记账：快照重放会把更早的历史原样送回来。
+    if (resetAt && t < resetAt) return false;
     const seq = Number.isFinite(Number(event.seq)) ? Number(event.seq) : -1;
     const eventModel = model ?? event.data?.model ?? event.data?.usage?.model;
     const eventProvider = provider ?? event.data?.provider;
@@ -457,6 +497,12 @@ export function createTokenLedger({
     const seq = Number.isFinite(Number(projection.asOfSeq)) ? Number(projection.asOfSeq) : -1;
     const t = Number.isFinite(Number(at)) ? Number(at) : now();
     const buckets = normalizeUsage(tokenUsage);
+    // 重置过账本：基线是「整条会话日志」的累计，包含重置前的全部历史。
+    // 想靠相减剥掉它并不可靠——重置那一刻若还没连上该会话、或投影只回了半截，
+    // 快照就会偏小，减完仍旧是几百万 token 的旧账（2026-11-10 实测：清空后页面
+    // 冒出 ¥2.44，全是这些基线）。所以重置之后直接不采信基线，只按逐轮采样记账；
+    // 代价是重置窗口内没到过事件的那点用量会计不到，比把旧账算回来强。
+    if (resetAt) return false;
     const prev = baselines.get(sessionId);
     if (prev && prev.seq > seq) return false;
     const key = keyOf(sessionId);
@@ -465,7 +511,9 @@ export function createTokenLedger({
       && prev.buckets.cacheHit === buckets.cacheHit
       && prev.buckets.cacheWrite === buckets.cacheWrite
       && prev.buckets.output === buckets.output;
-    baselines.set(sessionId, { sessionId, key, seq, t, model, provider, buckets });
+    baselines.set(sessionId, {
+      sessionId, key, seq, t, model, provider, buckets
+    });
     if (t > (sessionSeen.get(sessionId) ?? 0)) sessionSeen.set(sessionId, t);
     // 内容与 seq 都没变的重复基线（重连重发）不再落盘：否则每重连一次就多一行，
     // 而 follow 集合只会增长，日志会被无意义地推大。
@@ -525,7 +573,10 @@ export function createTokenLedger({
         index.set(s.sessionId, entry);
       }
       const base = baselines.get(s.sessionId);
-      const isLive = !base || s.seq > base.seq;
+      // 重置过账本时基线只覆盖「重置之后」的增量，重置前保留下来的明细
+      // （seq 不超过重置点）仍要计入，否则下午那部分会凭空消失。
+      const isLive = !base || s.seq > base.seq
+        || (base.from !== undefined && Number.isFinite(s.seq) && s.seq <= base.from);
       const p = priceUsage(s.buckets, { model: s.model, at: s.t || now(), table: priceTable });
       entry.estimated ||= p.rates.estimated;
       entry.allCost += p.cost.total;
@@ -635,7 +686,10 @@ export function createTokenLedger({
       const entry = index.get(sid);
       if (entry) rows.push(...entry.turns.values());
     }
-    rows.sort((a, b) => b.turn - a.turn || b.endedAt - a.endedAt);
+    // 按时间排序，而不是按 turn 编号：每个会话的 turn 都从 1 重新计数，
+    // 换过会话（重置/白名单重开）之后，旧会话的 turn 500+ 会把新会话今天的 turn 20 顶下去，
+    // 逐轮明细就永远停在旧会话最后一天。
+    rows.sort((a, b) => (b.endedAt || b.startedAt || 0) - (a.endedAt || a.startedAt || 0) || b.turn - a.turn);
     return rows;
   }
 
@@ -905,6 +959,7 @@ export function createTokenLedger({
       journalLines,
       maxLines,
       droppedLines,
+      resetAt,
       sessions: new Set([...baselines.keys(), ...sessionSeen.keys()]).size,
       baselines: baselines.size,
       samples: samples.size,
@@ -914,8 +969,26 @@ export function createTokenLedger({
     };
   }
 
-  /** 清空账本（控制台手动重置）。 */
-  function reset() {
+  /** 把重置水位序列化成 reset 行的 payload。 */
+  function serializedResetBaselines() {
+    const base = {};
+    for (const [sid, value] of resetBaselines) base[sid] = { seq: value.seq, b: value.buckets };
+    return base;
+  }
+
+  /**
+   * 清空账本（控制台手动重置）。
+   *
+   * @param {number} [at] 重置水位（毫秒）。缺省为当前时间；回填历史时要传更早的时间点。
+   */
+  function reset(at) {
+    const rt = Number.isFinite(Number(at)) ? Number(at) : now();
+    const savedBaselines = new Map(baselines);
+    resetAt = rt;
+    resetBaselines = new Map();
+    for (const [sid, base] of savedBaselines) {
+      resetBaselines.set(sid, { seq: base.seq, buckets: base.buckets });
+    }
     baselines.clear();
     samples.clear();
     retryAxis.clear();
@@ -929,10 +1002,14 @@ export function createTokenLedger({
     evictedDirty = false;
     droppedLines = 0;
     lastCompactedAt = 0;
-    journalLines = 0;
+    journalLines = 1;
     try {
       fs.mkdirSync(path.dirname(file), { recursive: true });
-      fs.writeFileSync(file, '', { encoding: 'utf8', mode: 0o600 });
+      fs.writeFileSync(
+        file,
+        `${JSON.stringify({ k: 'reset', t: rt, base: serializedResetBaselines() })}\n`,
+        { encoding: 'utf8', mode: 0o600 }
+      );
     } catch (error) {
       log('token 账本：重置失败', error?.message ?? error);
     }

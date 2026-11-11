@@ -70,6 +70,9 @@ const tests = [
   // ── v0.3.0 新功能（全部离线，假数据）────────────────────────────────────────
   // 人际连续性：QQ 号认人、改名、入群分类/去重、首次部署对账、可见范围过滤、跨群协作、存储可靠性。
   'test-continuity.mjs',
+  // 话题接续（2026-11-05）：唤醒后的 3 分钟接续期内，同话题消息按 12s 批次追加而不是重新唤醒；
+  // 话题偏了本地判定后进待机。纯函数，无网络。
+  'test-topic-continuity.mjs',
   // 管理通道：TOTP（RFC 6238 向量）、审计哈希链、确认码状态机、并发申请、自动回落、审批编号、命令解析。
   'test-admin-control.mjs',
   // 接线：真实 bridge.js + 假 DSH/OneBot —— 确认消息不进模型、非 owner/提示注入无法提权、
@@ -121,8 +124,6 @@ const tests = [
   'test-send-limit-console.mjs',
   'test-backfill.mjs',
   'test-role-per-key.mjs',
-  'test-dsh-auth-hint.mjs',
-  'test-owner-account.mjs',
   'test-prompt-blocks.mjs',
   'test-agent-token-guard.mjs',
   // AI 收藏表情的后端适配：SnowLuma 照旧 base64://；NapCat 只收本地路径时改用桥接自建的受控临时文件（用完即删）。

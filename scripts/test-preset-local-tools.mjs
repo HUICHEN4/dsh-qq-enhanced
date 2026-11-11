@@ -77,7 +77,16 @@ const LOCAL_EXECUTION_TOOLS = [
   'subagent_codex', 'subagent_claude_code',
   'spawn_teammate', 'team_task_create', 'team_task_get', 'team_task_list', 'team_task_update',
   'plugin_manager',
-  'schedule_create', 'schedule_list', 'schedule_update', 'schedule_delete',
+  'schedule_create', 'schedule_list', 'schedule_edit', 'schedule_view',
+  // 0.2.2 新增对账（从安装包 app.asar 抽出的真实工具名）
+  'ops_bash', 'ops_discover_tools', 'ops_glob', 'ops_grep', 'ops_inspect_local_file',
+  'ops_read_files', 'ops_result', 'ops_read_pdf', 'ops_read_docx', 'ops_read_table',
+  'ops_replace', 'ops_write_file', 'ops_edit_file', 'ops_diff', 'ops_stat', 'ops_copy',
+  'ops_move', 'ops_remove',
+  'terminal_open', 'terminal_close', 'terminal_list', 'terminal_read', 'terminal_send', 'terminal_signal',
+  'session_search', 'session_trace', 'session_event_read', 'session_event_search', 'session_event_trace',
+  'create_worktree', 'apply_patch', 'read_file', 'plugin_market', 'wait_agent',
+  'web_search', 'web_fetch',
 ];
 
 /**
@@ -103,7 +112,16 @@ function collectDshToolNames() {
  * 所以守卫必须继续 restrict 它们；在没装的机器上找不到属于正常情况，不算拼错的假名。
  *   dsh-plugin-guard（web profile 的可选 bundle）→ dsh_snapshot / dsh_rollback / incident_resolved
  */
-const OPTIONAL_BUNDLE_TOOL_NAMES = new Set(['dsh_snapshot', 'dsh_rollback', 'incident_resolved']);
+const OPTIONAL_BUNDLE_TOOL_NAMES = new Set([
+  'dsh_snapshot', 'dsh_rollback', 'incident_resolved',
+  // 0.2.2 的 asar 里已经没有这两个名字：它们来自可选的 Codex / Claude Code
+  // 子智能体 bundle（装了该 bundle 才有）。保留在守卫里是为了装上后立刻生效；
+  // 未装时 restrict 抛错被吞，不影响运行。
+  'subagent_codex', 'subagent_claude_code',
+  // 官方文件工具的别名：当前安装（0.2.2-rc.1）里查不到注册，文件能力由
+  // read / ops_* 取代；留在名单里只为兜住仍显式配置该别名的旧 profile。
+  'read_file',
+]);
 /** 允许出现在名单里、但不属于"本地执行"语义的名字（开发/注入器）。 */
 const DEV_TOOL_PREFIX = /^dev_/;
 

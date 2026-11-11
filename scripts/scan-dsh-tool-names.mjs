@@ -19,12 +19,12 @@
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import {
-  collectDshToolNames, dshPackagesDir, DANGER_TOOL_RE, SAFE_MODEL_TOOLS, TOOL_NAME_RE,
+  collectDshToolNames, dshPackagesDir, dshAsarPath, DANGER_TOOL_RE, SAFE_MODEL_TOOLS, TOOL_NAME_RE,
 } from './dsh-tool-names.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
-const { names, packages } = collectDshToolNames();
+const { names, packages, origin } = collectDshToolNames();
 const guardPath = path.join(ROOT, 'plugins', 'qq-agent-presets', 'qq-tool-restrict.mjs');
 const guard = await import(pathToFileURL(guardPath).href);
 const guarded = new Set(guard.RESTRICTED_TOOL_NAMES);
@@ -32,12 +32,20 @@ const guarded = new Set(guard.RESTRICTED_TOOL_NAMES);
 const sorted = [...names.keys()].sort();
 const onlyFlag = process.argv.includes('--missing');
 
-console.log(`DSH 包目录：${dshPackagesDir()}`);
+console.log(`DSH 包来源：${origin === 'asar' ? `asar ${dshAsarPath()}` : dshPackagesDir()}`);
 console.log(`扫描包数：${packages.length}；抽到工具名候选：${sorted.length}\n`);
+
+/** 可选 bundle / 旧别名：未安装时名字确实不存在，但守卫保留它们是故意的（装上即生效）。 */
+const OPTIONAL_BUNDLE_TOOL_NAMES = new Set([
+  'dsh_snapshot', 'dsh_rollback', 'incident_resolved',
+  'subagent_codex', 'subagent_claude_code',
+  'read_file',
+]);
 
 /** ① 守卫名单里的名字必须真实存在，否则 restrict 抛错被吞、限制静默失效。 */
 const fabricated = [...guarded]
-  .filter((n) => TOOL_NAME_RE.test(n) && !n.startsWith('dev_') && !names.has(n));
+  .filter((n) => TOOL_NAME_RE.test(n) && !n.startsWith('dev_')
+    && !OPTIONAL_BUNDLE_TOOL_NAMES.has(n) && !names.has(n));
 console.log('=== ① 守卫名单里、但安装包中找不到的名字（restrict 会抛错并静默失效） ===');
 console.log(fabricated.length ? fabricated.map((n) => `  ${n}`).join('\n') : '  (无)');
 

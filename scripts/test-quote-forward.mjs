@@ -236,6 +236,7 @@ test('⑥ 源码约束：发送引用时「加载中」不算确认归属；收�
   assert.match(v, /return info\?\.pending \? null : info;/);
   const target = src.slice(src.indexOf('async function resolveReplyTargetV2('), src.indexOf('// 判断当前消息是否“引用/回复了机器人自己”'));
   assert.ok(!/await resolveReplyInfo\(/.test(target), '发送引用只走 verifiedReplyInfo');
+  assert.match(target, /String\(m\.messageId\) === refStr/, '引用解析也要按真实 messageId 命中（旧消息 get_msg 可能查不到）');
   assert.match(src, /resolveReplyInfo\(kind, id, k, event\.self_id, \{ waitMs: REPLY_INGEST_WAIT_MS \}\)/);
   assert.match(src, /isQuoteTargetSelf\(event\.message \?\? \[\], kind, id, event\.self_id, resolveReply\)/, '判断引用自己复用同一次解析');
 });

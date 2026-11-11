@@ -26,6 +26,7 @@ export function blockFingerprint(text) {
 export const BLOCK_REFS = {
   slang: '【群聊黑话表】和上次一样，没有变化（需要时用 qq_slang_query 查）。',
   sticker: '【表情包】策略和常用表情都和上次一样（完整列表用 qq_list_stickers 查，没备注的先 qq_get_sticker_image 看图）。',
+  memory: '【记忆】和上次一样，没有变化（那些「几分钟前」是上次读到的，按本次【当前时间】自己推算就行）。',
 };
 
 const KEY_RE = /^(group|private):\d+$/;

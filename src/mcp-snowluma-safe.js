@@ -335,7 +335,6 @@ const TOOL_CONFIG_FLAGS = {
   // token 才改注册期过滤的），又诱导模型误调。`qq_set_sticker_remark` 默认就是 `false`
   // （见 bridge.js 的 socialV2.tools 默认表），所以此前它一直是"默认关闭却仍然可见"。
   qq_send_poke: 'sendPoke',
-  qq_recall: 'recall',
   qq_get_message_images: 'getImages',
   qq_get_forward_msg: 'getForwardMsg',
   qq_list_stickers: 'listStickers',
@@ -617,7 +616,7 @@ server.tool(
 
 server.tool(
   'qq_mark_read',
-  '将指定会话已查看的未读消息标记为已读。throughSeq 使用最近读取结果的 readThroughSeq，避免清除读取后才到达的新消息；省略 throughSeq 会按旧行为清空当前全部未读，因此推荐始终带上水位。注意：每次设置潜水/下一次唤醒前，桥接要求先用 qq_wait_for_messages(timeoutMs=300000) 完成一次沉睡前观察：5 分钟内没人说话可 mark_read 收尾沉睡；期间有人发新消息则先查看 newMessages，判断不需要你参与也可直接 mark_read 收尾；若你参与了回复，则下次想睡需重新等待观察窗口。',
+  '只标已读、不改唤醒配置。throughSeq 用最近读取结果的 readThroughSeq，避免清掉读取后才到的消息；省略会清空全部未读。**收尾时不要用这个工具**：直接调 qq_set_wake_config 并带上 throughSeq，标读+设置一次完成；先 mark_read 再设配置是两次模型往返，白花 token 也慢。只有「想保持当前唤醒状态、单纯标读」时才单独用它。',
   {
     key: z.string().describe('会话 key，格式 group:群号 或 private:QQ号'),
     token: z.string().describe('会话令牌（见唤醒提示中的【会话令牌】）'),
@@ -635,7 +634,7 @@ server.tool(
 
 server.tool(
   'qq_set_wake_config',
-  '设置指定会话的二代唤醒配置：mode/无限期或有限时间/提前唤醒条件（@、名字、关键词、提问、拍一拍、概率、anyMessage、指定成员）。triggers.speakerIds 是可选的“指定群友发言唤醒”：填一个或多个群友 QQ 号后，只要其中任意一位在群里发言就会唤醒你；不设置则不启用。适合在等某个人回复、或某人反应慢怕错过时使用。triggers.poke 开启后，群里有人拍一拍（包括拍你或拍别人）会唤醒你。注意：每次设置潜水/下一次唤醒前需先用 qq_wait_for_messages(timeoutMs=300000) 完成一次沉睡前观察：5 分钟内没人说话可设置并沉睡；期间有人发新消息则先查看 newMessages，判断不需要你参与可直接设置并沉睡；若你参与了回复，则下次想睡需重新等待观察窗口。',
+  '设置指定会话的二代唤醒配置：mode/无限期或有限时间/提前唤醒条件（@、名字、关键词、提问、拍一拍、概率、anyMessage、指定成员）。triggers.speakerIds 是可选的“指定群友发言唤醒”：填一个或多个群友 QQ 号后，只要其中任意一位在群里发言就会唤醒你；不设置则不启用。适合在等某个人回复、或某人反应慢怕错过时使用。triggers.poke 开启后，群里有人拍一拍（包括拍你或拍别人）会唤醒你。**收尾就这一枪**：把 throughSeq 一起带上，既设唤醒又标读，不需要再单独调 qq_mark_read。沉睡观察由桥接侧异步处理，不要在回合里长等。',
   {
     key: z.string().describe('会话 key，格式 group:群号 或 private:QQ号'),
     token: z.string().describe('会话令牌（见唤醒提示中的【会话令牌】）'),
@@ -781,45 +780,14 @@ if (cfg.socialV2?.tools?.sendPoke !== false) {
   );
 }
 
-// 撤回（PR #4）：默认关闭，socialV2.tools.recall 显式为 true 才注册（MCP 这里读的是原始 config.json，没有默认值）
-if (cfg.socialV2?.tools?.recall === true) {
-  server.tool(
-    'qq_recall',
-    '撤回**自己刚发的**一条消息（说错话、发重了、发错地方时用）。群聊和私聊都能用。'
-      + 'messageId 从 qq_send_message / qq_send_burst 返回里的 sentMessages[].messageId 拿（这是最可靠的来源，每次发送都会回传）；'
-      + '也可以先用 qq_get_my_recent_messages 查自己最近发过什么。'
-      + '**只能撤回自己发的**：桥接只认本会话里你自己发出去的 message id，撤别人的会被拒绝（那是管理员的权限）。'
-      + 'QQ 对撤回有时限（普通消息约 2 分钟，超时就撤不回了），所以别拖 —— 发错了就立刻撤，不要留到下一轮。'
-      + '不要为了掩饰而频繁撤回 —— 真人偶尔手滑才撤，老是撤回反而很假。',
-    {
-      key: z.string().describe('会话 key，格式 group:群号 或 private:QQ号'),
-      token: z.string().describe('会话令牌'),
-      messageId: z.union([z.number(), z.string()]).describe('要撤回的消息 id（来自 qq_send_message / qq_send_burst 返回的 sentMessages[].messageId）'),
-    },
-    async ({ key, token, messageId }) => {
-      try {
-        const data = await agentApi('/api/socialV2/recall', {
-          method: 'POST',
-          body: JSON.stringify({ key, messageId: String(messageId) }),
-          headers: { 'x-agent-token': token },
-          timeoutMs: 60000
-        });
-        return { content: [{ type: 'text', text: serializeModelData(data) }] };
-      } catch (error) {
-        return { content: [{ type: 'text', text: `撤回失败：${error?.message ?? error}` }], isError: true };
-      }
-    }
-  );
-}
-
 server.tool(
   'qq_wait_for_messages',
-  '等待分两种用途。首答前已读消息、只想确认有没有补充：用 purpose="reply"，按最后来信时间补足 quietMs 静默，已安静足够就立即返回；读取/思考时新到的消息也会返回，新消息重算静默。timeoutMs 是最长预算，不要求等满；预算到但 quiet=false 不代表对方已说完。此用途绝不代替沉睡前观察。等对方继续说、等回复或睡前观察：用默认 purpose="messages"；先等新消息，收到后才按 quietMs 等静默，没有新消息会等到 timeoutMs，单传 quietMs 不会缩短总等待。静默下限由后台配置，默认 10000ms。直接看 newMessages、unreadCount 和 readThroughSeq，返回消息无需重复查询；仍有未展示未读才补读。决定潜水/收尾时才用默认用途加 timeoutMs=300000 完成沉睡前观察，不能把 5 分钟观察放在首答之前；短等待不能代替。全程无人说话返回 preSleepWaitSatisfied=true；观察期间来了新消息返回 preSleepWaitObserved=true，读后不需参与可收尾，参与回复则下次收尾重新观察。preSleepWaitRemainingMs 仅供准备收尾时参考。',
+  '等待分两种用途。首答前已读消息、只想确认有没有补充：用 purpose="reply"，按最后来信时间补足 quietMs 静默，已安静足够就立即返回；读取/思考时新到的消息也会返回，新消息重算静默。timeoutMs 是最长预算，不要求等满；预算到但 quiet=false 不代表对方已说完。此用途只用于回复前的短静默。等对方继续说、等回复或睡前观察：用默认 purpose="messages"；先等新消息，收到后才按 quietMs 等静默，没有新消息会等到 timeoutMs，单传 quietMs 不会缩短总等待。静默下限由后台配置，默认 10000ms。直接看 newMessages、unreadCount 和 readThroughSeq，返回消息无需重复查询；仍有未展示未读才补读。决定潜水/收尾时直接设置唤醒配置或 mark_read 即可，不需要再用默认用途长等观察。全程无人说话返回 preSleepWaitSatisfied=true；观察期间来了新消息返回 preSleepWaitObserved=true，读后不需参与可收尾，参与回复则下次收尾重新观察。preSleepWaitRemainingMs 仅供准备收尾时参考。',
   {
     key: z.string().describe('会话 key，格式 group:群号 或 private:QQ号'),
     token: z.string().describe('会话令牌（见唤醒提示中的【会话令牌】）'),
     purpose: z.enum(['messages', 'reply']).optional().describe('默认 messages：等新消息/回复/睡前观察；reply：回复前短静默，计入最后来信后已过去的时间，绝不授予睡前观察资格'),
-    timeoutMs: z.number().optional().describe('等待预算毫秒数，默认 30000、最大 600000；reply 达到静默即返回，不必等满；沉睡前观察用 messages 并传 300000'),
+    timeoutMs: z.number().optional().describe('等待预算毫秒数，默认 30000、最大 60000（桥接侧硬上限）；reply 达到静默即返回，不必等满；等对方继续说话用 messages，预算 15000~30000 足够，超时就收尾'),
     minNewMessages: z.number().optional().describe('仅 messages 用途：至少等到多少条新消息才进入静默窗口，默认 1；reply 用途会忽略它'),
     quietMs: z.number().optional().describe('静默窗口毫秒数，建议 10000~12000；reply 从最后来信开始计时，messages 只在等到新消息后计时；后台默认至少 10000')
   },
@@ -1741,171 +1709,6 @@ if (cfg.socialV2?.tools?.ownerGroupAccess === true) {
         return { content: [{ type: 'text', text: serializeModelData(data) }] };
       } catch (error) {
         return { content: [{ type: 'text', text: `群规则操作失败：${error?.message ?? error}` }], isError: true };
-      }
-    }
-  );
-}
-
-// ════════════════════════════════════════════════════════════════════════
-// 管理员私聊里的账号门面操作（PR #4，qjjer）：QQ 空间、个性签名、昵称、在线状态、正在输入
-//
-// 全部默认关闭（socialV2.tools 里的开关必须显式为 true 才注册）。
-// 这里只转发：所有工具都调用桥接的 /api/socialV2/account，由桥接用会话令牌认人（只有管理员本人的私聊能用）、
-// 审计正文、查每日额度，并按控制台设置决定要不要先发给管理员确认。MCP 侧不直接调 OneBot。
-// ════════════════════════════════════════════════════════════════════════
-
-async function accountCall(key, token, action, params = {}) {
-  try {
-    const data = await agentApi('/api/socialV2/account', {
-      method: 'POST',
-      body: JSON.stringify({ key, action, params }),
-      headers: { 'x-agent-token': token },
-      timeoutMs: 150000
-    });
-    return { content: [{ type: 'text', text: serializeModelData(data) }] };
-  } catch (error) {
-    return { content: [{ type: 'text', text: `操作失败：${error?.message ?? error}` }], isError: true };
-  }
-}
-
-const ACCOUNT_KEY_DESC = '会话 key（只能是管理员本人的私聊 private:<管理员QQ>；桥接按会话令牌认人，别的会话调用会被拒绝）';
-const CONFIRM_NOTE = '返回 pending=true 表示已发给管理员确认、还没有完成，不要说已经做了。';
-
-if (cfg.socialV2?.tools?.qzonePost === true) {
-  server.tool(
-    'qq_qzone_post',
-    '在自己的 QQ 空间发一条说说（发出后好友都看得到）。只在管理员本人私聊里可用。一次只发一条。' + CONFIRM_NOTE,
-    {
-      key: z.string().describe(ACCOUNT_KEY_DESC),
-      token: z.string().describe('会话令牌'),
-      content: z.string().describe('说说正文，最多 300 字'),
-      images: z.array(z.string()).optional().describe('可选：公网 https 图片地址（最多 9 张；不接受本机路径）'),
-      ugc_right: z.union([z.literal(1), z.literal(4), z.literal(16), z.literal(64), z.literal(128)]).optional().describe('可见范围：1 所有人 / 4 好友 / 16 只给 target_uins 里的人看 / 64 仅自己 / 128 不给 target_uins 里的人看；不传用控制台默认（通常是好友可见）'),
-      target_uins: z.array(z.string()).optional().describe('ugc_right 为 16（这些人可见）或 128（这些人不可见）时的 QQ 号'),
-    },
-    async ({ key, token, content, images, ugc_right, target_uins }) => accountCall(key, token, 'post', { content, images, ugc_right, target_uins })
-  );
-  server.tool(
-    'qq_qzone_delete',
-    '删除自己空间里的一条说说（按 tid，从 qq_qzone_list 拿）。只在管理员本人私聊里、管理员明确要求时用。' + CONFIRM_NOTE,
-    { key: z.string().describe(ACCOUNT_KEY_DESC), token: z.string().describe('会话令牌'), tid: z.string().describe('说说的 tid') },
-    async ({ key, token, tid }) => accountCall(key, token, 'deletePost', { tid })
-  );
-}
-
-if (cfg.socialV2?.tools?.qzoneRead === true) {
-  server.tool(
-    'qq_qzone_list',
-    '读取自己空间的说说列表（只读）。只在管理员本人私聊里可用。',
-    { key: z.string().describe(ACCOUNT_KEY_DESC), token: z.string().describe('会话令牌'), limit: z.number().int().min(1).max(30).optional().describe('最多几条，默认 10') },
-    async ({ key, token, limit }) => accountCall(key, token, 'list', { limit })
-  );
-  server.tool(
-    'qq_qzone_feeds',
-    '读取空间动态流（好友的说说，只读）。只在管理员本人私聊里可用。',
-    { key: z.string().describe(ACCOUNT_KEY_DESC), token: z.string().describe('会话令牌'), limit: z.number().int().min(1).max(30).optional().describe('最多几条，默认 10') },
-    async ({ key, token, limit }) => accountCall(key, token, 'feeds', { limit })
-  );
-  server.tool(
-    'qq_my_profile',
-    '读取自己这个 QQ 号的资料（昵称、个性签名、等级，只读）。只在管理员本人私聊里可用。',
-    { key: z.string().describe(ACCOUNT_KEY_DESC), token: z.string().describe('会话令牌') },
-    async ({ key, token }) => accountCall(key, token, 'profile', {})
-  );
-}
-
-if (cfg.socialV2?.tools?.qzoneLike === true) {
-  server.tool(
-    'qq_qzone_like',
-    '给一条说说点赞 / 取消赞。只在管理员本人私聊里可用。tid 与 target_uin 从 qq_qzone_feeds / qq_qzone_list 拿。',
-    {
-      key: z.string().describe(ACCOUNT_KEY_DESC), token: z.string().describe('会话令牌'),
-      tid: z.string().describe('说说 tid'), target_uin: z.string().describe('这条说说属于谁（QQ 号）'),
-      action: z.enum(['like', 'unlike']).optional().describe('like 点赞（默认）/ unlike 取消赞'),
-    },
-    async ({ key, token, tid, target_uin, action }) => accountCall(key, token, 'like', { tid, target_uin, action })
-  );
-}
-
-if (cfg.socialV2?.tools?.qzoneComment === true) {
-  server.tool(
-    'qq_qzone_comment',
-    '在一条说说下评论。只在管理员本人私聊里可用。⚠️ 空间评论发出后没有接口能删（只能管理员在手机上删），不确定就别评论，宁可只点赞。' + CONFIRM_NOTE,
-    {
-      key: z.string().describe(ACCOUNT_KEY_DESC), token: z.string().describe('会话令牌'),
-      tid: z.string().describe('说说 tid'), target_uin: z.string().describe('这条说说属于谁（QQ 号）'),
-      content: z.string().describe('评论正文，最多 120 字'),
-    },
-    async ({ key, token, tid, target_uin, content }) => accountCall(key, token, 'comment', { tid, target_uin, content })
-  );
-}
-
-if (cfg.socialV2?.tools?.setSignature === true) {
-  server.tool(
-    'qq_set_signature',
-    '修改自己的 QQ 个性签名（所有好友和群友都看得到）。只在管理员本人私聊里可用，一天别改太多次。' + CONFIRM_NOTE,
-    { key: z.string().describe(ACCOUNT_KEY_DESC), token: z.string().describe('会话令牌'), signature: z.string().describe('新签名，最多 80 字') },
-    async ({ key, token, signature }) => accountCall(key, token, 'signature', { signature })
-  );
-}
-
-if (cfg.socialV2?.tools?.setNickname === true) {
-  server.tool(
-    'qq_set_nickname',
-    '修改自己的 QQ 昵称（所有好友和群友都看得到）。只在管理员本人私聊里、管理员明确要求时用。' + CONFIRM_NOTE,
-    { key: z.string().describe(ACCOUNT_KEY_DESC), token: z.string().describe('会话令牌'), nickname: z.string().describe('新昵称，最多 24 字') },
-    async ({ key, token, nickname }) => accountCall(key, token, 'nickname', { nickname })
-  );
-}
-
-if (cfg.socialV2?.tools?.setOnlineStatus === true) {
-  server.tool(
-    'qq_set_online_status',
-    '设置自己 QQ 的在线状态。只在管理员本人私聊里可用。',
-    {
-      key: z.string().describe(ACCOUNT_KEY_DESC), token: z.string().describe('会话令牌'),
-      status: z.number().int().describe('在线状态码，如 10 在线 / 30 离开 / 40 隐身 / 50 忙碌（不同客户端可能略有差异）'),
-      ext_status: z.number().int().optional().describe('扩展状态码，一般不传'),
-      battery_status: z.number().int().optional().describe('电量，一般不传'),
-    },
-    async ({ key, token, status, ext_status, battery_status }) => accountCall(key, token, 'onlineStatus', { status, ext_status, battery_status })
-  );
-}
-
-if (cfg.socialV2?.tools?.setInputStatus === true) {
-  server.tool(
-    'qq_set_input_status',
-    '在管理员私聊里显示「正在输入」（长回复前垫一下）。只在管理员本人私聊里可用，只对管理员显示。',
-    { key: z.string().describe(ACCOUNT_KEY_DESC), token: z.string().describe('会话令牌') },
-    async ({ key, token }) => accountCall(key, token, 'inputStatus', {})
-  );
-}
-
-// ── 云 TTS 语音（Edge TTS，默认关闭）─────────────────────────────────────
-// ⚠️ 要念的文字会发给微软的服务器。合成、发送都在桥接里做（先校验令牌、审计文字），这里只转发。
-if (cfg.socialV2?.tools?.speak === true) {
-  server.tool(
-    'qq_speak',
-    '把一句话合成语音发出去（不是语音库里的现成音频）。适合短句，最多 200 字，建议 60 字内。合成要几秒，失败就如实说失败了，别假装发了语音。',
-    {
-      key: z.string().describe('会话 key，格式 group:群号 或 private:QQ号'),
-      token: z.string().describe('会话令牌'),
-      text: z.string().describe('要念出来的话'),
-      voice: z.string().optional().describe('音色，默认用控制台设置的（如 zh-CN-XiaoyiNeural、zh-CN-XiaoxiaoNeural、zh-CN-YunxiNeural）'),
-      rate: z.string().optional().describe('语速，如 +10% / -10%'),
-      pitch: z.string().optional().describe('音调，如 +2Hz / -2Hz'),
-    },
-    async ({ key, token, text, voice, rate, pitch }) => {
-      try {
-        const data = await agentApi('/api/socialV2/speak', {
-          method: 'POST',
-          body: JSON.stringify({ key, text, voice, rate, pitch }),
-          headers: { 'x-agent-token': token },
-          timeoutMs: 120000
-        });
-        return { content: [{ type: 'text', text: serializeModelData(data) }] };
-      } catch (error) {
-        return { content: [{ type: 'text', text: `发语音失败：${error?.message ?? error}` }], isError: true };
       }
     }
   );

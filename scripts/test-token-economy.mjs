@@ -134,17 +134,17 @@ await test('my-recent returns an existing safe cursor without authorizing unrela
   assert.deepEqual(seqs(st.unread), [1]);
 });
 
-await test('combined close cannot bypass the pre-sleep observation guard', async ({ st, request, append }) => {
+await test('combined close is accepted and falls back to async observation instead of a 400', async ({ st, request, append }) => {
+  // 2026-11-03 起，沉默前的观察由桥接侧异步兜底（硬触发条件 + 定时器），不再用 400 把 AI 挡回去逼它在回合内长等。
   append('still discussing a normal topic');
   const read = await request('unread');
-  const before = plain(st.wakeConfig);
-  for (const route of ['mark-read', 'wake-config']) {
-    const result = await request(route, { body: { throughSeq: read.data.readThroughSeq, config: DIVING } });
-    assert.equal(result.status, 400);
-    assert.ok(result.data.preSleepWaitRemainingMs > 0);
-    assert.deepEqual(seqs(st.unread), [1]);
-    assert.deepEqual(plain(st.wakeConfig), before);
-  }
+  const closed = await request('wake-config', { body: { throughSeq: read.data.readThroughSeq, config: DIVING } });
+  assert.equal(closed.status, 200);
+  assert.equal(closed.data.markedCount, 1);
+  assert.deepEqual(seqs(st.unread), []);
+  assert.equal(st.wakeConfig.mode, 'diving');
+  // 收尾后必须留下可唤醒的硬触发条件，不能停在叫不醒的静默态。
+  assert.equal(st.wakeConfig.triggers.atMention, true);
 }, { observe: true });
 
 await test('a full quiet observation allows a single combined close', async ({ h, st, request, append }) => {

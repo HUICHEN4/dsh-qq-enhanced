@@ -19,12 +19,38 @@ const legacyIds = JSON.parse((await readFile(join(here, 'console-ui-legacy-ids.j
 const baselinePath = join(here, 'console-ui-contracts.json');
 if (record && !original) throw new Error('--record-baseline requires --original; only the pre-redesign console can define the baseline.');
 
+// 控制台改版后新增、且服务端已支持的请求字段。契约测试允许它们出现，
+// 但比较前先剥掉，再与改版前基线逐字比对——新字段放行，删改老字段照样红。
+// 每加一个都要在服务端确认过：顶层字段按接口列，二代配置的工具开关按 tools 列。
+const KNOWN_ADDITIONS = {
+  '/api/mode': ['level', 'apply'],
+  '/api/roles/create': ['apply'],
+  '/api/role': ['apply'],
+  '/api/role-mode': ['apply'],
+  '/api/security': ['rehardenStateDir'],
+};
+const KNOWN_V2_TOOL_FLAGS = ['crossGroup', 'handoverMemory', 'ownerGroupAccess', 'ownerRelay', 'personProfile', 'requestMode', 'schedule', 'sendVoice', 'webImage'];
+// clickWrite() 返回的是请求体本身；fixture.requests 里的元素是 {method,path,body}。
+// 两种入参都接受，path 显式传入时才做白名单剥离。
+function stripKnownAdditions(value, explicitPath) {
+  const isRequest = value && typeof value === 'object' && value.path && typeof value.body === 'object' && value.body !== null;
+  const path = isRequest ? value.path : explicitPath;
+  const src = isRequest ? value.body : value;
+  if (!path || !src || typeof src !== 'object') return value;
+  const body = structuredClone(src);
+  for (const key of KNOWN_ADDITIONS[path] || []) delete body[key];
+  if (path === '/api/socialV2/config' && body.tools) for (const key of KNOWN_V2_TOOL_FLAGS) delete body.tools[key];
+  return isRequest ? { ...value, body } : body;
+}
+
 async function loadPlaywright() {
   const require = createRequire(import.meta.url);
-  for (const candidate of [process.env.PLAYWRIGHT_MODULE, 'playwright'].filter(Boolean)) {
+  // 只要有 playwright-core 就够用：本测试自己指定浏览器可执行文件（Chrome/Edge），
+  // 不需要 playwright 包附带的浏览器下载。
+  for (const candidate of [process.env.PLAYWRIGHT_MODULE, 'playwright', 'playwright-core'].filter(Boolean)) {
     try { return require(candidate); } catch {}
   }
-  throw new Error('Playwright not found. Install with npm install --no-save playwright, or set PLAYWRIGHT_MODULE to its package directory.');
+  throw new Error('Playwright not found. Install with pnpm add -D playwright-core, or set PLAYWRIGHT_MODULE to its package directory.');
 }
 
 const { chromium } = await loadPlaywright();
@@ -119,22 +145,22 @@ try {
 
   await test('Mode and preset contracts', async () => {
     for (const mode of ['chat', 'reserved', 'reserved2', 'closed-agent']) {
-      assert.deepEqual(await clickWrite(`#modeRow [data-mode="${mode}"]`, '/api/mode'), { mode, closedAgentPreset: '' });
+      assert.deepEqual(stripKnownAdditions(await clickWrite(`#modeRow [data-mode="${mode}"]`, '/api/mode'), '/api/mode'), { mode, closedAgentPreset: '' });
     }
     const select = await reveal('#closedPreset');
     await Promise.all([page.waitForResponse(r => r.url().endsWith('/api/mode') && r.request().method() === 'POST'), select.selectOption('qq-chat-v2')]);
-    assert.deepEqual(fixture.requests.at(-1).body, { mode: 'closed-agent', closedAgentPreset: 'qq-chat-v2' });
+    assert.deepEqual(stripKnownAdditions(fixture.requests.at(-1)).body, { mode: 'closed-agent', closedAgentPreset: 'qq-chat-v2' });
   });
 
   await test('Role creation, selection, clearing and silent-mode contracts', async () => {
     await fill('newRoleName', '契约测试角色');
     await fill('newRoleContent', '温柔、有耐心，回答简洁。');
-    assert.deepEqual(await clickWrite('#roleCreate', '/api/roles/create'), { name: '契约测试角色', content: '温柔、有耐心，回答简洁。' });
+    assert.deepEqual(stripKnownAdditions(await clickWrite('#roleCreate', '/api/roles/create'), '/api/roles/create'), { name: '契约测试角色', content: '温柔、有耐心，回答简洁。' });
     await fill('roleInput', '契约测试角色');
-    assert.deepEqual(await clickWrite('#roleSet', '/api/role'), { role: '契约测试角色' });
-    assert.deepEqual(await clickWrite('#roleClear', '/api/role'), { role: null });
-    assert.deepEqual(await clickWrite('#silentOn', '/api/role-mode'), { mode: 'silent' });
-    assert.deepEqual(await clickWrite('#silentOff', '/api/role-mode'), { mode: 'active' });
+    assert.deepEqual(stripKnownAdditions(await clickWrite('#roleSet', '/api/role'), '/api/role'), { role: '契约测试角色' });
+    assert.deepEqual(stripKnownAdditions(await clickWrite('#roleClear', '/api/role'), '/api/role'), { role: null });
+    assert.deepEqual(stripKnownAdditions(await clickWrite('#silentOn', '/api/role-mode'), '/api/role-mode'), { mode: 'silent' });
+    assert.deepEqual(stripKnownAdditions(await clickWrite('#silentOff', '/api/role-mode'), '/api/role-mode'), { mode: 'active' });
   });
 
   await test('Whitelist numeric parsing and security contracts', async () => {
@@ -253,7 +279,12 @@ try {
     console.log(`Recorded original API contracts: ${baselinePath}`);
   } else await test('All submitted payloads exactly match the pre-redesign console baseline', async () => {
     const expected = JSON.parse(await readFile(baselinePath, 'utf8'));
-    assert.deepEqual(fixture.requests, expected);
+    // 重新检测 state/ ACL 的按钮走后端探测，不属于改版前表单写载荷契约（由上面单条测试覆盖）。
+    const comparable = fixture.requests
+      .map(r => stripKnownAdditions(r))
+      // 剥离新增字段后为空的 /api/security 就是「重新检测 state/ ACL」，由上面单条测试覆盖，不算表单写载荷。
+      .filter(r => !(r.path === '/api/security' && Object.keys(r.body || {}).length === 0));
+    assert.deepEqual(comparable, expected);
   });
 
   if (!original) await test('Token usage panel renders totals, per-conversation and per-turn cost', async () => {
@@ -537,7 +568,7 @@ try {
     await navigate('overview');
     await page.waitForFunction(() => document.getElementById('dshEffortSelect').options.length > 0);
     const efforts = async () => page.locator('#dshEffortSelect option').evaluateAll((nodes) => nodes.map((n) => n.value));
-    assert.deepEqual(await efforts(), ['off', 'low', 'high', 'max'], `档位应来自 DSH 目录，实际 ${(await efforts()).join(',')}`);
+    assert.deepEqual(await efforts(), ['off', 'low', 'high', 'max', 'none'], `档位应来自 DSH 目录，实际 ${(await efforts()).join(',')}`);
     assert.equal(await page.locator('#dshEffortSelect').inputValue(), 'max', '默认应为 max');
     assert.match(await page.locator('#dshEffortSideEffect').textContent(), /全局默认/, '必须说明会连带改 DSH 全局默认');
     // 选 off：提示可能影响质量
@@ -553,7 +584,6 @@ try {
     assert.match(notices, /能不能看图未知/);
     await page.locator('#dshModelSelect').selectOption('example-reasoner');
     assert.deepEqual(await efforts(), ['minimal', 'medium', 'xhigh'], '档位跟着模型变');
-    page.once('dialog', (d) => d.accept());
     const [saved] = await Promise.all([
       page.waitForResponse(r => new URL(r.url()).pathname === '/api/dsh/model' && r.request().method() === 'POST'),
       page.locator('#dshEffortSave').click(),

@@ -1002,7 +1002,7 @@ tr:last-child td {
 }
 .silence-row input[type=time] {
   width:100%;
-  min-width:118px
+  min-width:0
 }
 .silence-options {
   border:1px solid var(--card-border);
@@ -1934,6 +1934,7 @@ button:active:not(:disabled) {
       <button data-view="social-v2" class="nav-item"><span class="nav-icon" aria-hidden="true">◈</span>二代仿真<span class="nav-note">V2</span></button>
       <button data-view="social-v1" class="nav-item"><span class="nav-icon" aria-hidden="true">◇</span>一代仿真<span class="nav-note">V1</span></button>
       <button data-view="slang" class="nav-item"><span class="nav-icon" aria-hidden="true">▤</span>黑话词库</button>
+      <button data-view="style" class="nav-item"><span class="nav-icon" aria-hidden="true">✎</span>说话方式</button>
       <button data-view="scheduler" class="nav-item"><span class="nav-icon" aria-hidden="true">◷</span>定时任务</button>
       <div class="nav-label">管理</div>
       <button data-view="usage" class="nav-item"><span class="nav-icon" aria-hidden="true">◧</span>令牌与花费</button>
@@ -2279,50 +2280,11 @@ button:active:not(:disabled) {
         <label class="v2-tool-item"><input type="checkbox" data-v2-tool="setStickerRemark"> <span><b>qq_set_sticker_remark</b><span class="meta">修改 QQ 官方表情备注（默认禁用，慎用）</span></span></label>
         <label class="v2-tool-item"><input type="checkbox" data-v2-tool="sendVoice"> <span><b>qq_send_voice / qq_list_voices</b><span class="meta">发送语音条（只能发语音库里的音频；偶然而为的强表达）</span></span></label>
         <label class="v2-tool-item"><input type="checkbox" data-v2-tool="webImage"> <span><b>qq_search_images / qq_preview_image / qq_send_web_image</b><span class="meta">搜图并发送（默认关）：只在管理员私聊里用，「找一张 xxx 的图发我」；必须先看图再发，搜索词会发给 Bing；改后重启 DSH 才会出现在工具列表</span></span></label>
-        <label class="v2-tool-item"><input type="checkbox" data-v2-tool="recall"> <span><b>qq_recall</b><span class="meta">撤回 AI 自己刚发的消息（默认关）：只能撤本会话里它自己发出去的，撤不了别人的；QQ 约 2 分钟内才能撤</span></span></label>
-        <label class="v2-tool-item"><input type="checkbox" data-v2-tool="qzonePost"> <span><b>qq_qzone_post / qq_qzone_delete</b><span class="meta">发说说 / 删说说（默认关）：只在管理员私聊里能用，确认方式见下面「账号门面操作」</span></span></label>
-        <label class="v2-tool-item"><input type="checkbox" data-v2-tool="qzoneComment"> <span><b>qq_qzone_comment</b><span class="meta">评论说说（默认关）：⚠️ 空间评论发出后删不掉，只能你在手机上删</span></span></label>
-        <label class="v2-tool-item"><input type="checkbox" data-v2-tool="qzoneLike"> <span><b>qq_qzone_like</b><span class="meta">点赞 / 取消赞（默认关，只在管理员私聊里）</span></span></label>
-        <label class="v2-tool-item"><input type="checkbox" data-v2-tool="qzoneRead"> <span><b>qq_qzone_list / qq_qzone_feeds / qq_my_profile</b><span class="meta">读自己的说说、空间动态、自己的资料（只读，默认关，只在管理员私聊里）</span></span></label>
-        <label class="v2-tool-item"><input type="checkbox" data-v2-tool="setSignature"> <span><b>qq_set_signature</b><span class="meta">改个性签名（默认关）：改之前存下旧签名，可在下面一键改回</span></span></label>
-        <label class="v2-tool-item"><input type="checkbox" data-v2-tool="setNickname"> <span><b>qq_set_nickname</b><span class="meta">改昵称（默认关）：改之前存下旧昵称，可在下面一键改回</span></span></label>
-        <label class="v2-tool-item"><input type="checkbox" data-v2-tool="setOnlineStatus"> <span><b>qq_set_online_status</b><span class="meta">改在线状态（默认关，只在管理员私聊里）</span></span></label>
-        <label class="v2-tool-item"><input type="checkbox" data-v2-tool="setInputStatus"> <span><b>qq_set_input_status</b><span class="meta">在管理员私聊里显示「正在输入」（默认关）</span></span></label>
-        <label class="v2-tool-item"><input type="checkbox" data-v2-tool="speak"> <span><b>qq_speak</b><span class="meta">云语音（默认关）：⚠️ 要念的文字会发给微软的服务器；需要本机装 edge-tts ≥ 7.3（python -m pip install --upgrade edge-tts）</span></span></label>
         <label class="v2-tool-item"><input type="checkbox" data-v2-tool="schedule"> <span><b>qq_schedule_create / list / update / delete</b><span class="meta">定时任务：只在管理员私聊里能用，AI 替你登记提醒、到点由桥接执行；默认只能发给你，登记后桥接另发确认（详见「定时任务」页面）</span></span></label>
         <label class="v2-tool-item"><input type="checkbox" data-v2-tool="handoverMemory"> <span><b>切到 agent 时带上私聊长期记忆</b><span class="meta">不是工具：切到 agent L1～L3 时，把二代仿真里 AI 在管理员私聊记下的话题、想说的话、印象一并交接给 agent（只取管理员私聊的，不含任何群；已脱敏）。关掉后只交接最近的私聊往来</span></span></label>
       </div>
       <div class="meta" style="margin-top:6px">二代黑话学习：AI 可用 <code>qq_slang_submit</code> 提交陌生词，也可由桥接自动提取；管理员在「黑话词库」页面筛选确认后，词条会自动写入黑话提示词并注入 <code>qq_get_prompt</code> 与后续唤醒。</div>
 
-      </div></details>
-<details class="settings-group" id="accountGroup"><summary>账号门面操作（发说说 / 改签名 / 改昵称）</summary><div class="settings-content">
-      <div class="meta" style="margin-bottom:8px">
-        这些操作只在<b>管理员本人的私聊</b>里能用：桥接按会话令牌认人，群里谁叫 AI 做都会被拒，这一条没有开关。
-        下面的「需要确认」决定 AI 要做时，是否先私聊给你发预览、等你回复「确认 6 位码」。<br>
-        <b>你叫它做</b> = 这次是你在私聊里发消息把它叫醒的；<b>它主动做</b> = 定时、主动冒泡、补收消息等其它情况（由桥接判断，AI 改不了）。工具本身的开关在上面的工具列表里。
-      </div>
-      <div id="accountConfirmTable" class="meta">打开本组时加载…</div>
-      <div class="row" style="flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px">
-        <label style="flex:0 0 auto">说说和签名用的人格</label>
-        <select id="accountPersona" style="flex:0 1 260px"></select>
-        <span class="meta" id="accountPersonaNote"></span>
-      </div>
-      <div class="row" style="flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px">
-        <label style="flex:0 0 auto">每天最多：说说</label><input type="number" id="accountLimitPost" min="0" max="100" style="width:64px">
-        <label style="flex:0 0 auto">评论</label><input type="number" id="accountLimitComment" min="0" max="100" style="width:64px">
-        <label style="flex:0 0 auto">点赞</label><input type="number" id="accountLimitLike" min="0" max="100" style="width:64px">
-        <label style="flex:0 0 auto">签名</label><input type="number" id="accountLimitSignature" min="0" max="100" style="width:64px">
-        <label style="flex:0 0 auto">昵称</label><input type="number" id="accountLimitNickname" min="0" max="100" style="width:64px">
-        <label style="flex:0 0 auto">删说说</label><input type="number" id="accountLimitDeletePost" min="0" max="100" style="width:64px">
-      </div>
-      <div class="row" style="flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px">
-        <label style="flex:0 0 auto">评论发出前等待（秒，0 = 不等）</label><input type="number" id="accountCommentDelay" min="0" max="600" style="width:72px">
-        <label style="flex:0 0 auto"><input type="checkbox" id="accountAllowPublic" style="width:auto"> 允许发「所有人可见」的说说</label>
-        <button id="accountSave" type="button">保存账号门面设置</button>
-        <span id="accountMsg" class="meta"></span>
-      </div>
-      <div class="meta" style="margin-top:10px"><b>最近的操作</b>（签名 / 昵称可一键改回修改之前的值）</div>
-      <div id="accountHistory" class="meta" style="margin-top:4px"></div>
       </div></details>
 <details class="settings-group"><summary>语音库与语音发送（调试）</summary><div class="settings-content">
       <div class="meta" style="margin-bottom:8px">
@@ -2652,6 +2614,7 @@ button:active:not(:disabled) {
 
       <div class="divider"></div>
       <div class="meta" style="margin-bottom:6px">手动添加黑话</div>
+      <div class="meta" style="margin-bottom:6px">含义留空 = 先存成候选，桥接会自动联网研究一次；研究完在「候选」页确认即可。</div>
       <div class="row">
         <input type="text" id="slangContent" placeholder="词条，如：绝绝子" style="flex:1">
         <input type="text" id="slangMeaning" placeholder="含义，如：很好、很棒" style="flex:1">
@@ -2695,7 +2658,22 @@ button:active:not(:disabled) {
         </div>
       </details>
     </section>
-<section id="section-scheduler" data-page="scheduler" class="card span-all">
+<section id="section-style" data-page="style" class="card span-all">
+      <h2>说话方式示例</h2>
+      <div class="meta">桥接启动时检查一次：距上次采样超过 7 天、且群聊新消息够 80 条，就用「黑话学习」会话采一批真实接话风格。这里通过后才写进角色卡的「示例块」，不会动别的段落；拒绝的不会进卡。</div>
+      <div class="row" style="margin-top:8px">
+        <button id="styleSample" class="small">现在采样</button>
+        <button id="styleRefresh" class="small">刷新</button>
+        <label style="display:flex;align-items:center;gap:6px;margin:0"><input type="checkbox" id="styleSelectAll"> 全选待确认</label>
+        <button id="styleApprove" class="small">通过所选</button>
+        <button id="styleReject" class="small danger">拒绝所选</button>
+      </div>
+      <span class="meta" id="styleMsg"></span>
+      <div class="meta" id="styleStatus" style="margin-top:6px"></div>
+      <div class="slang-scroll" id="styleList">加载中…</div>
+    </section>
+
+    <section id="section-scheduler" data-page="scheduler" class="card span-all">
       <h2>定时任务</h2>
       <div class="row">
         <label class="sched-chip" style="margin:0"><input type="checkbox" id="schedEnabled"> 启用定时任务</label>
@@ -3614,7 +3592,11 @@ function dshFillEfforts(preferred) {
   const efforts = entry ? entry.efforts : (r.options || []).map((id) => ({ id, name: r.labels?.[id]?.name || id, description: r.labels?.[id]?.description || '' }));
   const def = entry ? entry.defaultEffort : (r.providerDefault || null);
   const items = efforts.map((e) => ({ value: e.id, label: `${e.id}${e.id === def ? '（默认）' : ''}${e.id === 'off' ? ' · 关闭思考' : ''}`, title: e.description || '' }));
-  const want = [preferred, r.reasoningEffort, def].find((v) => v && items.some((x) => x.value === v));
+  // 「不指定」（上游 none 哨兵）：不带 reasoningEffort，由模型自己决定；内部存空串。
+  // 只有 DeepSeek 自家提供方提供这个哨兵，第三方模型的档位以它自己的目录为准。
+  const provider = document.getElementById('dshProviderSelect').value;
+  if (!provider || DSH_FIRST_PARTY.includes(provider)) items.push({ value: 'none', label: '不指定（模型默认）', title: '不指定思考强度，交给模型自己决定' });
+  const want = [preferred, r.reasoningEffort || 'none', def].find((v) => v && items.some((x) => x.value === v));
   dshFillSelect(select, items, want || items[0]?.value);
 }
 // 保存前的预览提示（措辞与服务端 selectionNotices 一致；保存后以服务端返回的为准）
@@ -5271,6 +5253,7 @@ const consolePages = {
   'social-v2': ['二代仿真', '自主参与，恰到好处。', '管理 AI 的工具、唤醒与发言节奏。展开需要调整的分组，修改后保存参数。'],
   'social-v1': ['一代仿真', '为自然对话，设定合适的节奏。', '调整参与概率、活跃周期和分条发送；所有配置项完整保留。'],
   slang: ['黑话词库', '读懂群聊里的，言外之意。', '从候选到确认，让 AI 逐渐熟悉大家的表达习惯。'],
+  style: ['说话方式', '让她说话，越来越像群里的人。', '从群聊采样真实接话风格，人工确认后写进角色卡的示例块。'],
   scheduler: ['定时任务', '到点的事，交给桥接记着。', '按时区和规则定时发消息，或叫 AI 到点来说；可以发给管理员私聊、白名单好友和群。'],
   usage: ['令牌与花费', '每一次思考，都算得清楚。', '实时查看 AI 的 token 消耗与花费，可下钻到每个群、每个好友、每一轮对话。'],
   access: ['访问与安全', '明确边界，安心连接。', '管理允许对话的对象、管理员权限与控制台访问凭证。'],
@@ -5286,6 +5269,99 @@ function showConsoleToast(message) {
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => { toast.hidden = true; }, 4200);
 }
+
+// ── 说话方式示例（半自动采样 → 人工审批）────────────────────────────
+let styleCandidatesCache = [];
+function styleEl(tag, className, text) {
+  const el = document.createElement(tag);
+  if (className) el.className = className;
+  if (text != null) el.textContent = text;
+  return el;
+}
+function renderStyleList(pending, approved) {
+  const list = document.getElementById('styleList');
+  list.textContent = '';
+  if (!pending.length && !approved.length) {
+    list.appendChild(styleEl('div', 'meta', '还没有候选。点「现在采样」，或等下次启动检查满足条件后自动跑。'));
+    return;
+  }
+  const draw = (title, items, selectable) => {
+    list.appendChild(styleEl('div', 'meta', title)).style.margin = '10px 0 4px';
+    for (const item of items) {
+      const row = styleEl('div', 'row');
+      row.style.alignItems = 'flex-start';
+      const cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.dataset.id = item.id;
+      if (!selectable) cb.disabled = true;
+      const body = styleEl('div');
+      body.style.flex = '1';
+      body.appendChild(styleEl('div', '', '群友：' + item.scene));
+      const replyLine = styleEl('div');
+      replyLine.appendChild(styleEl('span', 'meta', '她可以回：'));
+      const strong = styleEl('strong', '', item.reply);
+      replyLine.appendChild(strong);
+      body.appendChild(replyLine);
+      row.appendChild(cb);
+      row.appendChild(body);
+      list.appendChild(row);
+    }
+  };
+  draw('待确认（' + pending.length + '）', pending, true);
+  draw('已在卡里（最近 ' + approved.length + '）', approved, false);
+}
+async function refreshStyle() {
+  const msg = document.getElementById('styleMsg');
+  msg.textContent = '加载中…';
+  try {
+    const [status, data] = await Promise.all([api('/api/style/status'), api('/api/style/candidates')]);
+    styleCandidatesCache = data.candidates || [];
+    const meta = status.meta || {};
+    const c = status.config || {};
+    const when = meta.lastRunAt ? new Date(meta.lastRunAt).toLocaleString() : '从未';
+    document.getElementById('styleStatus').textContent =
+      '上次采样：' + when + '（' + (meta.lastRunStatus || '-') + '，新候选 ' + (meta.lastRunCount ?? 0) + ' 条，语料 ' + (meta.lastRunCorpus ?? 0) + ' 条）' +
+      '｜周期 ' + (c.intervalDays ?? 7) + ' 天 / 至少 ' + (c.minNewMessages ?? 80) + ' 条新消息' +
+      '｜待确认 ' + (status.counts?.pending ?? 0) + ' / 已通过 ' + (status.counts?.approved ?? 0) + (status.running ? '｜正在采样…' : '');
+    const pending = styleCandidatesCache.filter((x) => x.status === 'pending');
+    const approved = styleCandidatesCache.filter((x) => x.status === 'approved').slice(0, 20);
+    renderStyleList(pending, approved);
+    msg.textContent = '';
+  } catch (error) {
+    msg.textContent = '加载失败：' + error.message;
+  }
+}
+async function styleDecide(action) {
+  const ids = [...document.querySelectorAll('#styleList input[type=checkbox]:checked')].map((x) => x.dataset.id).filter(Boolean);
+  const msg = document.getElementById('styleMsg');
+  if (!ids.length) { msg.textContent = '先勾选几条待确认的。'; return; }
+  msg.textContent = '提交中…';
+  try {
+    const r = await api('/api/style/candidates/' + action, 'POST', { ids });
+    if (action === 'approve') msg.textContent = (r.card?.changed ? '已通过 ' + r.approved + ' 条，写进 ' + r.card.file + '。' : '已通过 ' + r.approved + ' 条。');
+    else msg.textContent = '已拒绝 ' + r.rejected + ' 条。';
+    await refreshStyle();
+  } catch (error) {
+    msg.textContent = '操作失败：' + error.message;
+  }
+}
+if (document.getElementById('styleSample')) {
+  document.getElementById('styleSample').addEventListener('click', async () => {
+    const msg = document.getElementById('styleMsg');
+    msg.textContent = '已排队，采样要跑一会儿…';
+    try {
+      const r = await api('/api/style/sample', 'POST', {});
+      msg.textContent = r.ok ? '已排队，等日志或刷新看结果。' : ('没跑起来：' + (r.error || '未知原因'));
+    } catch (error) { msg.textContent = '提交失败：' + error.message; }
+  });
+  document.getElementById('styleRefresh').addEventListener('click', () => refreshStyle());
+  document.getElementById('styleApprove').addEventListener('click', () => styleDecide('approve'));
+  document.getElementById('styleReject').addEventListener('click', () => styleDecide('reject'));
+  document.getElementById('styleSelectAll').addEventListener('change', (event) => {
+    document.querySelectorAll('#styleList input[type=checkbox]:not([disabled])').forEach((cb) => { cb.checked = event.target.checked; });
+  });
+}
+
 function setConsolePage(page, { updateHash = true, focus = false, target = '' } = {}) {
   if (!Object.hasOwn(consolePages, page)) page = 'overview';
   currentConsolePage = page;
@@ -5307,7 +5383,8 @@ function setConsolePage(page, { updateHash = true, focus = false, target = '' } 
   // 人格页：每次进入都重新读一次各会话用哪张卡（全局人格可能在别处改过、新会话可能刚建好）
   if (page === 'persona' && typeof refreshRoleAssignments === 'function') setTimeout(() => refreshRoleAssignments().catch(() => {}), 0);
   // 直接打开 #scheduler 时这里先于定时任务那段脚本执行：推迟到脚本跑完再刷新（否则会碰到还没初始化的变量）
-  if (page === 'scheduler' && typeof refreshScheduler === 'function') setTimeout(() => refreshScheduler(), 0);
+
+  if (page === 'style' && typeof refreshStyle === 'function') setTimeout(() => refreshStyle(), 0);  if (page === 'scheduler' && typeof refreshScheduler === 'function') setTimeout(() => refreshScheduler(), 0);
   if (focus) {
     document.getElementById('mainContent').focus({ preventScroll: true });
     document.getElementById(target || 'mainContent')?.scrollIntoView({ block: 'start', behavior: 'instant' });
@@ -6356,62 +6433,6 @@ setInterval(() => { if (currentConsolePage !== 'usage') return; refreshUsage(); 
     if (!stored()) apply(event.matches ? 'dark' : 'light', false);
   });
 })();
-
-// ── 账号门面操作（PR #4）：确认开关、门面人格、额度、记录 ──────────────────────────
-const ACCOUNT_CONFIRM_ROWS = [['post', '发说说'], ['comment', '评论'], ['signature', '改签名'], ['nickname', '改昵称'], ['deletePost', '删说说']];
-const ACCOUNT_ACTION_LABEL = { post: '发说说', deletePost: '删说说', comment: '评论', like: '点赞', signature: '改签名', nickname: '改昵称' };
-async function loadAccount() {
-  const r = await api('/api/account', 'GET');
-  if (!r.ok) { document.getElementById('accountConfirmTable').textContent = '加载失败：' + (r.error || ''); return; }
-  const c = r.config;
-  document.getElementById('accountConfirmTable').innerHTML = '<table class="data-table"><tr><th>操作</th><th>你叫它做时需要确认</th><th>它主动做时需要确认</th></tr>'
-    + ACCOUNT_CONFIRM_ROWS.map(([a, label]) => `<tr><td>${esc(label)}</td><td><input type="checkbox" data-account-confirm="${a}:owner" ${c.confirm[a]?.owner !== false ? 'checked' : ''} style="width:auto"></td><td><input type="checkbox" data-account-confirm="${a}:proactive" ${c.confirm[a]?.proactive !== false ? 'checked' : ''} style="width:auto"></td></tr>`).join('')
-    + '</table>' + (r.ownerQQ ? '' : '<div class="meta err">config.json 没有配置 ownerQQ：这些操作都用不了。</div>');
-  const sel = document.getElementById('accountPersona');
-  const opts = [['follow', `跟私聊（现在是：${r.privateRole || '不挂卡'}）`], ['global', `跟全局默认（现在是：${r.globalRole || '不挂卡'}）`], ...(r.roles || []).map((n) => [n, n])];
-  if (!['follow', 'global', ...(r.roles || [])].includes(c.persona)) opts.push([c.persona, c.persona + '（文件不存在）']);
-  sel.innerHTML = opts.map(([v, t]) => `<option value="${esc(v)}">${esc(t)}</option>`).join('');
-  sel.value = c.persona;
-  document.getElementById('accountPersonaNote').textContent = '选的卡和私聊不同时，说说、评论、签名、昵称会先按这张卡改写（多一次 AI 调用）；确认预览里会同时列出原稿。';
-  for (const [id, k] of [['accountLimitPost', 'post'], ['accountLimitComment', 'comment'], ['accountLimitLike', 'like'], ['accountLimitSignature', 'signature'], ['accountLimitNickname', 'nickname'], ['accountLimitDeletePost', 'deletePost']]) document.getElementById(id).value = c.limits[k];
-  document.getElementById('accountCommentDelay').value = c.commentDelaySeconds;
-  document.getElementById('accountAllowPublic').checked = c.allowPublic !== false;
-  const h = r.history || [];
-  document.getElementById('accountHistory').innerHTML = h.length ? h.map((it) => {
-    const when = new Date(it.at).toLocaleString();
-    const restore = it.restorable && it.previous != null && !it.restoredAt ? ` <button type="button" class="small" data-account-restore="${it.id}">改回「${esc(String(it.previous).slice(0, 30))}」</button>` : (it.restoredAt ? ' <span class="pill">已改回</span>' : '');
-    return `<div>${esc(when)} · ${esc(ACCOUNT_ACTION_LABEL[it.action] || it.action)} · ${esc(it.via || '')}${it.trigger === 'proactive' ? '（AI 主动）' : ''}${it.text ? '：' + esc(String(it.text).slice(0, 80)) : ''}${it.target ? ` · 对象 ${esc(it.target)}` : ''}${restore}</div>`;
-  }).join('') : '还没有操作记录。';
-}
-document.getElementById('accountGroup')?.addEventListener('toggle', (e) => { if (e.target.open) loadAccount(); });
-document.getElementById('accountHistory')?.addEventListener('click', async (e) => {
-  const id = e.target?.dataset?.accountRestore;
-  if (!id) return;
-  if (!confirm('把它改回修改之前的值？')) return;
-  const r = await api('/api/account/restore', 'POST', { id: Number(id) });
-  document.getElementById('accountMsg').textContent = r.ok ? '✅ 已改回' : '❌ ' + (r.error || '改回失败');
-  loadAccount();
-});
-document.getElementById('accountSave')?.addEventListener('click', async () => {
-  const confirm = {};
-  document.querySelectorAll('[data-account-confirm]').forEach((el) => {
-    const [a, who] = el.dataset.accountConfirm.split(':');
-    confirm[a] = { ...(confirm[a] || {}), [who]: el.checked };
-  });
-  const num = (id) => Number(document.getElementById(id).value);
-  const body = {
-    confirm,
-    persona: document.getElementById('accountPersona').value,
-    limits: { post: num('accountLimitPost'), comment: num('accountLimitComment'), like: num('accountLimitLike'), signature: num('accountLimitSignature'), nickname: num('accountLimitNickname'), deletePost: num('accountLimitDeletePost') },
-    commentDelaySeconds: num('accountCommentDelay'),
-    allowPublic: document.getElementById('accountAllowPublic').checked,
-  };
-  const r = await api('/api/account/config', 'POST', body);
-  const m = document.getElementById('accountMsg');
-  m.textContent = r.ok ? '✅ 已保存' : '❌ ' + (r.error || '保存失败');
-  m.className = r.ok ? 'meta ok' : 'meta err';
-  if (r.ok) loadAccount();
-});
 </script>
 </body>
 </html>

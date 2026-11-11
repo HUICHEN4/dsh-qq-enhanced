@@ -271,7 +271,25 @@ assert(emptyWindow.buckets.every((b) => b.cost === 0), '窗口内无用量时全
 // ── reset ───────────────────────────────────────────────────────────────
 ledger.reset();
 assert(ledger.summary().conversations.length === 0, 'reset 清空内存态');
-assert(fs.readFileSync(ledgerFile, 'utf8') === '', 'reset 清空磁盘日志');
+const afterResetRows = fs.readFileSync(ledgerFile, 'utf8').trim().split('\n').filter(Boolean);
+assert(afterResetRows.length === 1, 'reset 后在磁盘上只留一条重置水位行');
+const resetRow = JSON.parse(afterResetRows[0]);
+assert(resetRow.k === 'reset' && Number(resetRow.t) > 0, '重置水位行带时间戳');
+assert(ledger.stats().resetAt === Number(resetRow.t), '内存里的重置水位与磁盘一致');
+// 重启（重新按磁盘载入）后旧账不得复活：水位之前的事件一律不记账。
+const reloadedAfterReset = createTokenLedger({ file: ledgerFile, priceTable: DEFAULT_PRICE_TABLE });
+const reloadedTotals = reloadedAfterReset.summary().totals.buckets;
+assert(reloadedTotals.cacheMiss === 0 && reloadedTotals.output === 0, '重启载入重置水位后旧账不复活');
+reloadedAfterReset.ingestEvent({
+  sessionId: 's-reset',
+  event: {
+    type: 'assistant/message',
+    seq: 999999,
+    time: Date.now(),
+    data: { turn: 1, step: 1, usage: { inputTokens: 7, outputTokens: 3 } }
+  }
+});
+assert(reloadedAfterReset.summary().totals.buckets.cacheMiss === 7, '重置之后的新事件照常计费');
 
 // ── usageOfEvent ────────────────────────────────────────────────────────
 assert(usageOfEvent({ type: 'assistant/message', data: { usage: { inputTokens: 1 } } })?.inputTokens === 1, 'usageOfEvent 优先取 data.usage');

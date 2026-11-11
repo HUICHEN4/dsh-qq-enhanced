@@ -19,7 +19,7 @@ test('称呼：经接口平台写「QQ 后端（经接口平台 · NapCat 版本
   assert.equal(qqBackendLabel({ viaPlatform: true, backend: { name: 'NapCat', version: '4.18.38' } }), 'QQ 后端（经接口平台 · NapCat 4.18.38）');
   assert.equal(qqBackendLabel({ viaPlatform: true, backend: null }), 'QQ 后端（经接口平台）', '还不知道后端时不猜');
   assert.equal(qqBackendLabel({ viaPlatform: true, backend: { name: 'SnowLuma', version: null } }), 'QQ 后端（经接口平台 · SnowLuma）');
-  assert.equal(qqBackendLabel({ viaPlatform: false, backend: null }), 'SnowLuma');
+  assert.equal(qqBackendLabel({ viaPlatform: false, backend: null }), 'QQ 后端', '握手前还不知道后端是谁，不硬说是 SnowLuma');
   assert.equal(qqBackendLabel({ viaPlatform: false, backend: { name: 'SnowLuma', version: '1.14.22' } }), 'SnowLuma 1.14.22');
   assert.equal(qqBackendLabel({ viaPlatform: false, backend: { name: 'NapCat', version: '4.18.38' } }), 'QQ 后端（NapCat 4.18.38）', '直连 NapCat 也不叫 SnowLuma');
 });

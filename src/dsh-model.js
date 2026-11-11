@@ -21,6 +21,11 @@ export const FALLBACK_EFFORTS = Object.freeze(['low', 'high', 'max']);
 export const DEFAULT_PROVIDER = 'deepseek-official';
 export const DEFAULT_MODEL = 'deepseek-flash';
 export const DEFAULT_EFFORT = 'max';
+/**
+ * 「不指定」哨兵（对齐上游 v0.2.2-rc1）：内部仍用空串表示不带 reasoningEffort，
+ * 这里只是接受配置/控制台传来的 none 写法，避免它被判成非法档位而回退 max。
+ */
+export const EFFORT_NONE = 'none';
 
 /**
  * DeepSeek 自家的提供方：命令行版叫 deepseek-official，桌面版 0.2.1 起叫 deepseek-account。
@@ -49,11 +54,12 @@ const clean = (v) => String(v ?? '').trim();
  */
 export function normalizeEffortId(value, { allowNone = true } = {}) {
   const v = clean(value).toLowerCase();
-  if (!v) {
+  // none 是「不指定」的保留写法：映射成空串，selectModel 就不会带 reasoningEffort。
+  if (!v || v === EFFORT_NONE) {
     if (allowNone) return '';
     throw new Error('请选择思考强度');
   }
-  if (!KNOWN_EFFORTS.includes(v)) throw new Error(`思考强度只能是 ${KNOWN_EFFORTS.join(' / ')}`);
+  if (!KNOWN_EFFORTS.includes(v)) throw new Error(`思考强度只能是 ${[...KNOWN_EFFORTS, EFFORT_NONE].join(' / ')}`);
   return v;
 }
 

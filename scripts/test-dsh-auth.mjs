@@ -17,8 +17,17 @@ import {
   NodeApiClient, discoverDshLaunchToken, discoverDshSessionCookie,
   readBrowserSessionSecret, resolveDshHome, mintBrowserSessionCookie, isLoopbackBase
 } from '../src/dsh-client.js';
+import { resolveDshBaseUrl } from '../src/lib/dsh-endpoint.mjs';
 
-const BASE = process.env.DSH_BASE_URL || 'http://127.0.0.1:3080';
+// 不写死 3080：DSH 桌面版每个进程监听一个随机回环端口，命令行版才是 3080。
+// 显式给 DSH_BASE_URL 时照用，否则复用桥接同款的自动发现；识别不到再回落到 3080。
+const explicitBase = process.env.DSH_BASE_URL;
+let BASE = explicitBase;
+if (!BASE) {
+  const ep = await resolveDshBaseUrl('', { timeoutMs: 1500 }).catch(() => null);
+  BASE = ep?.url || 'http://127.0.0.1:3080';
+  console.log(`DSH 地址自动识别：${BASE}${ep?.reachable ? '' : '（暂时连不上，按此地址继续）'}`);
+}
 
 let pass = 0;
 let fail = 0;

@@ -83,7 +83,7 @@ server.tool(
     // 只读工具：不再暴露本机路径/PID（那需要进程控制能力，而该能力已被移除）。
     const payload = { ...info };
     if (info.reachable === false) {
-      payload.hint = 'SnowLuma 网关不可达。请自行启动 SnowLuma（本程序不代装、不代启，原因见项目文档的合规说明 L6）。'
+      payload.hint = 'QQ 后端网关不可达。请自行启动本机实际在用的后端（NapCat 或 SnowLuma；本程序不代装、不代启，原因见项目文档的合规说明 L6）。'
         + (hc.homeDir ? '' : ' 若 config.json 的 snowluma.httpUrl 与实际端口不一致，也请一并检查。');
     }
     return { content: [{ type: 'text', text: JSON.stringify(payload, null, 2) }] };

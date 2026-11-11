@@ -725,6 +725,11 @@ export class NodeApiClient extends AbstractApiClient {
     let socketOpen = false;
     let eventStreamId = null;
     let eventClientId = null;
+    // ready 看门狗：0.2.2 换 WebSocket 后，DSH 正在重启时会出现「socket 连上、
+    // 但 $events 流永远不回 ready 也不报错」的半开状态；此时桥接既不重连、
+    // 提问/审批通道也是死的，QQ 侧表现为「它不说话了」。12 秒收不到 ready 就重连。
+    let readyTimer = null;
+    const READY_TIMEOUT_MS = 12_000;
     let ended = false;
     const followed = new Set();
     const streamToSession = new Map();
@@ -737,6 +742,7 @@ export class NodeApiClient extends AbstractApiClient {
     const endStream = () => {
       if (ended) return;
       ended = true;
+      if (readyTimer) { clearTimeout(readyTimer); readyTimer = null; }
       if (this._muxSendOpen === sendOpen) this._muxSendOpen = null;
       // 连接断开（含鉴权失败/DSH 重启）时丢弃旧 Cookie，重连会重新 token exchange。
       if (!sig.aborted) this.invalidateAuth();
@@ -757,6 +763,12 @@ export class NodeApiClient extends AbstractApiClient {
             args: {
               request: {
                 address: { kind: 'session', sessionId },
+                // DSH 0.2.1-rc.3 起，session.follow **不再**默认激活冷会话：
+                // 省略 activate 只读历史、不 promote Agent。桥接启动/重连时会重放
+                // 全部已持久化会话的 follow，DSH 重启后它们都是冷会话，若还有
+                // pending inbox（断线前排队的消息），不激活就会一直停在那里，
+                // QQ 上表现为「它不理我了」。显式激活恢复旧语义。
+                activate: true,
                 // 开场快照的历史深度。默认只有 50 条，不足以回填逐轮花费；
                 // 调大只影响首帧体积（每个已 follow 的会话一帧），不改变事件通道语义。
                 maxMessages: FOLLOW_SNAPSHOT_MESSAGES
@@ -798,6 +810,17 @@ export class NodeApiClient extends AbstractApiClient {
       // 少了这一步，DSH 一重启，所有已存在的 QQ 会话就会静默失联。
       for (const sid of this._desiredFollows) sendOpen(sid);
       sendOpenEvents();
+      // ready 看门狗（见上）。只在该连接上装一次；若 12 秒内没等到 ready，
+      // 说明 DSH 侧半开/正在重启，结束本条 mux 让上层退避重连，别干等。
+      if (!ended && !readyTimer) {
+        readyTimer = setTimeout(() => {
+          readyTimer = null;
+          if (ended || eventClientId) return;
+          console.error(`[dsh-client] remote.mux 已连接但 ${READY_TIMEOUT_MS / 1000}s 未收到 $events.ready，判定半开，主动断开重连`);
+          endStream();
+        }, READY_TIMEOUT_MS);
+        readyTimer.unref?.();
+      }
       if (!ended) onOpen?.();
     };
     const handleMessage = (event) => {
@@ -817,6 +840,7 @@ export class NodeApiClient extends AbstractApiClient {
           const value = msg.value;
           if (value.type === 'ready') {
             eventClientId = value.clientId;
+            if (readyTimer) { clearTimeout(readyTimer); readyTimer = null; }
           } else if (value.type === 'waterfall' && eventClientId) {
             if (value.event === 'approval/request') {
               enqueue({
@@ -939,6 +963,7 @@ export class NodeApiClient extends AbstractApiClient {
         await new Promise((resolve) => { wake = resolve; });
       }
     } finally {
+      if (readyTimer) { clearTimeout(readyTimer); readyTimer = null; }
       if (this._muxSendOpen === sendOpen) this._muxSendOpen = null;
       sig.removeEventListener('abort', handleAbort);
       socket.removeEventListener('open', handleOpen);

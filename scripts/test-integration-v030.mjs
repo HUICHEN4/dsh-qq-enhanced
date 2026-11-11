@@ -537,5 +537,140 @@ await test('审计 F1：控制台 API 不再接受 ?token=（只有打开页面�
   });
 });
 
+await test('监控期：闲聊不唤醒、点名叫醒、到期安静进深潜（m04090）', async (h) => {
+  const key = `group:${GROUP}`;
+  const st = h.getSocialV2State(key);
+  st.wakeConfig = {
+    mode: 'diving',
+    infinite: false,
+    sleepUntil: new Date(Date.now() + 180000).toISOString(),
+    triggers: { atMention: true, nameMention: false, question: false, poke: false, anyMessage: true, keywords: [], probability: 0 }
+  };
+  h.socialV2.conversations.set(key, st);
+  const event = { post_type: 'message', message_type: 'group', group_id: GROUP, user_id: MALLORY, self_id: ALICE, message: [], raw_message: '' };
+  assert.equal(h.evaluateWakeTriggerV2(key, st, event, 'group', '今天好热啊', '今天好热啊', false), null, '监控期内闲聊不该唤醒');
+  // 2026-11-06（master m05942）：真 @ 与「引用里带出来的 @」分开。
+  // 引用 → quoteSelf（接续里立刻投一批），真 @ → atMention（完整唤醒）。
+  assert.equal(h.evaluateWakeTriggerV2(key, st, event, 'group', '你看这个', '你看这个', true), 'quoteSelf', '引用她仍应唤醒（quoteSelf）');
+  const atEvent = { ...event, message: [{ type: 'at', data: { qq: String(ALICE) } }] };
+  assert.equal(h.evaluateWakeTriggerV2(key, st, atEvent, 'group', '@Alice 你看这个', '@Alice 你看这个', false), 'atMention', '真 @ 仍走完整唤醒');
+  assert.equal(h.monitorWindowActiveV2(st), true);
+  h.expireFiniteSleepV2(key);
+  assert.equal(st.wakeConfig.infinite, true, '监控期满进深潜');
+  assert.equal(st.wakeConfig.sleepUntil, null);
+  assert.notEqual(st.wakeConfig.triggers.anyMessage, true, 'anyMessage 必须撤掉');
+  assert.equal(st.wakeConfig.windowWatch, undefined, 'windowWatch 字段已删（2026-11-06 简化），监控窗只认 anyMessage');
+  assert.equal(h.monitorWindowActiveV2(st), false);
+});
+
+
+// 话题接续（2026-11-05，master m04232；2026-11-06 m04843 改为交给她判）：
+// 她说完话进接续期，新消息按 12s 批次追加（不重建 wake prompt）；默认批次一律追加，
+// 接不接由她自己定；judgeByModel=false 才退回本地词重叠硬判。
+await test('接续：同话题追加、默认交给她判话题、真唤醒让位（m04232/m04843）', async (h) => {
+  const key = `group:${GROUP}`;
+  const st = h.getSocialV2State(key);
+  st.agentToken = 'fixture-agent-token';
+  st.wakeConfig = { mode: 'diving', infinite: true, sleepUntil: null, triggers: { atMention: true, anyMessage: false, keywords: [], probability: 0 } };
+  h.socialV2.conversations.set(key, st);
+
+  // 她刚说完「贝斯」，桥接开接续期
+  assert.equal(h.startContinuationV2(key, ['这首的贝斯线我扒完了，Ibanez 手感就是好']), true, '接续期应能开');
+  assert.ok(st.continuation && h.continuationCfg().enabled, 'state 上应有接续记录');
+
+  // 同话题消息：先进 pending，flush 后追加到同一会话
+  assert.equal(h.noteContinuationMessageV2(key, st, { sender: '小明', text: '哪首？我也在练这首的贝斯' }), true);
+  st.unread = [{ seq: 1, sender: '小明', text: '哪首？我也在练这首的贝斯', isSelf: false }];
+  const before = h.calls.prompts.length;
+  await h.flushContinuationV2(key);
+  assert.equal(h.calls.prompts.length, before + 1, '同话题应该追加一条 prompt');
+  const prompt = (h.calls.prompts.at(-1).content ?? []).map((c) => String(c?.text ?? '')).join('\n');
+  assert.ok(prompt.includes('【接续】'), '追加 prompt 必须标【接续】');
+  assert.ok(prompt.includes('我也在练这首的贝斯'), '只给新消息');
+  assert.ok(!prompt.includes('【记忆】'), '接续不重建记忆块');
+  assert.equal((st.unread || []).length, 0, '追加过的消息要从未读里剔除');
+  assert.ok(st.continuation && st.continuation.untilMs > Date.now(), '聊着就续期');
+
+  // 默认 judgeByModel（master m04843）：换了话题也照样追加，接不接由她自己判
+  h.noteContinuationMessageV2(key, st, { sender: '小明', text: '今天食堂的饭真难吃，还涨价了' });
+  const before2 = h.calls.prompts.length;
+  await h.flushContinuationV2(key);
+  assert.equal(h.calls.prompts.length, before2 + 1, '交给她判时跑题消息也追加');
+  assert.equal(st.continuation?.active, true, '跑题不再由桥接直接收摊');
+
+  // judgeByModel=false 才回到老模式：本地词重叠硬判，偏了直接停
+  const wakeCfg = (h.cfg.socialV2.wake = h.cfg.socialV2.wake || {});
+  const tc = (wakeCfg.topicContinuation = wakeCfg.topicContinuation || {});
+  const hadJudge = 'judgeByModel' in tc;
+  const savedJudge = tc.judgeByModel;
+  tc.judgeByModel = false;
+  h.endContinuationV2(key, 'test-reset');
+  h.startContinuationV2(key, ['这首的贝斯线我扒完了，Ibanez 手感就是好']);
+  h.noteContinuationMessageV2(key, st, { sender: '小明', text: '今天食堂的饭真难吃，还涨价了' });
+  const before3 = h.calls.prompts.length;
+  await h.flushContinuationV2(key);
+  assert.equal(h.calls.prompts.length, before3, '本地硬判模式跑题不追加');
+  assert.equal(st.continuation?.closeReason, 'topic-switched', '本地硬判模式以 topic-switched 结束');
+  assert.equal(st.continuation?.active, false, '结束的接续不再 active');
+  if (hadJudge) tc.judgeByModel = savedJudge; else delete tc.judgeByModel;
+
+  // 真唤醒让位给重建上下文
+  st.continuation = { ...st.continuation, active: false, closedAt: 0, closeReason: undefined, untilMs: Date.now() + 60000 };
+  h.startContinuationV2(key, ['继续聊贝斯']);
+  assert.ok(st.continuation, '重新开一次');
+  h.endContinuationV2(key, 'wake:atMention');
+  assert.equal(st.continuation.closeReason, 'wake:atMention', '唤醒到来时接续结束');
+});
+
+// 一直醒着（2026-11-06，master m04640/m04651）：冷场 15 分钟、沉默放慢到 60 秒、
+// 她说「去睡了」就真睡 4 小时。
+await test('接续：沉默一批后放慢节奏，说去睡了就收工睡觉（m04640）', async (h) => {
+  const key = `group:${GROUP}`;
+  const st = h.getSocialV2State(key);
+  st.agentToken = 'fixture-agent-token';
+  st.wakeConfig = { mode: 'diving', infinite: true, sleepUntil: null, triggers: { atMention: true, anyMessage: false, keywords: [], probability: 0 } };
+  h.socialV2.conversations.set(key, st);
+  h.endContinuationV2(key, 'test-reset');
+
+  assert.equal(h.startContinuationV2(key, ['这首的贝斯线真带劲']), true);
+  assert.equal(st.continuation.silent, false, '刚说完话按 12 秒节奏');
+  assert.equal(h.continuationCfg().idleWindowMs, 900000, '冷场 15 分钟');
+  assert.equal(st.continuation.untilMs - Date.now() > 850000, true, '接续窗口约 15 分钟');
+
+  // 一批消息追加进去之后她没开口 ⇒ 下一批按沉默节奏
+  h.noteContinuationMessageV2(key, st, { sender: '小明', text: '这首的贝斯线确实带劲，滑音那段' });
+  st.unread = [{ seq: 11, sender: '小明', text: '这首的贝斯线确实带劲，滑音那段', isSelf: false }];
+  await h.flushContinuationV2(key);
+  assert.ok(st.continuation && st.continuation.awaitingReplyAt > 0, '交出去要记下等她回应');
+  h.noteContinuationMessageV2(key, st, { sender: '小明', text: '贝斯线那段滑音我也想学' });
+  assert.equal(st.continuation.silent, true, '她没接话就进入沉默节奏');
+  assert.equal(h.continuationCfg().silentBatchWindowMs, 60000);
+  assert.equal(h.continuationCfg().maxSilentBatches, 3, '连续沉默 3 批就收工');
+
+  // 连着 3 批没开口 → silent-exit（master m04982）
+  await h.flushContinuationV2(key);            // 第 1 批：上面那条
+  assert.equal(st.continuation?.silentBatches, 1, '第 1 批沉默要计数');
+  assert.equal(st.continuation?.active, true, '还没到上限');
+  h.noteContinuationMessageV2(key, st, { sender: '小明', text: '那段滑音你练了多久' });
+  await h.flushContinuationV2(key);            // 第 2 批
+  assert.equal(st.continuation?.silentBatches, 2, '第 2 批沉默要计数');
+  assert.equal(st.continuation?.active, true, '第 2 批还没到上限');
+  h.noteContinuationMessageV2(key, st, { sender: '小明', text: '那你有空教教我' });
+  await h.flushContinuationV2(key);            // 第 3 批 → 收工
+  assert.equal(st.continuation?.active, false, '第 3 批沉默后收工');
+  assert.equal(st.continuation?.closeReason, 'silent-exit');
+  h.endContinuationV2(key, 'test-cleanup');
+
+  // 说「去睡了」→ 结束接续 + 安静睡觉（不挂定时唤醒，@ 仍能叫醒）
+  h.recordSentMessagesV2(key, ['那我先去睡了，明天再聊']);
+  assert.equal(st.continuation?.active, false, '告别时接续要结束');
+  assert.equal(st.wakeConfig.mode, 'diving', '进入深潜');
+  assert.equal(st.wakeConfig.infinite, true, '不挂定时唤醒（到点叫醒纯烧钱）');
+  assert.equal(st.wakeConfig.sleepUntil, null);
+  assert.equal(st.wakeConfig.triggers.anyMessage, false, '不能再被任意消息叫醒');
+  assert.equal(st.wakeConfig.triggers.atMention, true, '@ 仍要能叫醒');
+  assert.equal(st.lastSleepPhraseAt > 0, true);
+});
+
 console.log(`\nv0.3.0 集成测试：${passed} 通过，${failures} 失败`);
 process.exitCode = failures ? 1 : 0;

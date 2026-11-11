@@ -155,7 +155,8 @@ test('控制中心页面：SnowLuma 在 Windows / Linux 上都可用（macOS 仍
   const html = fs.readFileSync(path.join(root, 'public', 'control-center.html'), 'utf8');
   assert.match(html, /const SNOW_OS = \['win32', 'linux'\];/);
   assert.ok(!html.includes("S?.os === 'win32' ? [LOCAL_SNOW]"), '本机 SnowLuma 占位项不再只看 Windows');
-  assert.match(html, /\{ id: 'snowluma', name: 'SnowLuma', os: 'Windows \/ Linux' \}/);
+  // SnowLuma 后端已退役（2026-11 收尾）：控制中心只列 NapCat；平台声明保留给接口平台展示。
+  assert.match(html, /\{ id: 'napcat', name: 'NapCat', os: 'macOS \/ Windows \/ Linux' \}/);
   assert.match(html, /需要 \$\{i\.nodeRequirement \?\? '22\.13\+'\}/);
   assert.match(html, /本机需要 \$\{i\.expectedTarget\} 版/);
   assert.match(html, /launcher\.sh/);
