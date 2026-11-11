@@ -1,8 +1,8 @@
 blank_issues_enabled: false
 contact_links:
   - name: 使用问题 / 交流
-    url: https://github.com/h-D-ACE/dsh-qq/discussions
+    url: https://github.com/HUICHEN4/dsh-qq-enhanced/discussions
     about: 不会用、想问怎么调、想看别人的配置，都放这里。
   - name: 安全与隐私
-    url: https://github.com/h-D-ACE/dsh-qq/blob/main/RULES.md
+    url: https://github.com/HUICHEN4/dsh-qq-enhanced/blob/main/RULES.md
     about: 权限边界与安全承诺先读这篇；涉及漏洞请勿公开发 Issue。

@@ -3,10 +3,10 @@
 ## 提问题
 
 1. 先翻 [`docs/guides/TROUBLESHOOTING.md`](docs/guides/TROUBLESHOOTING.md)。
-2. 再搜 [Issues](https://github.com/h-D-ACE/dsh-qq/issues)——有人问过就直接跟帖。
+2. 再搜 [Issues](https://github.com/HUICHEN4/dsh-qq-enhanced/issues)——有人问过就直接跟帖。
 3. 还没有就按模板开 Issue：Bug 报告 / 功能建议。贴日志前把 QQ 号、群号、本机路径打码。
 
-不会用、想交流配置、想晒自己的机器人，去 [Discussions](https://github.com/h-D-ACE/dsh-qq/discussions)，别开 Issue。
+不会用、想交流配置、想晒自己的机器人，去 [Discussions](https://github.com/HUICHEN4/dsh-qq-enhanced/discussions)，别开 Issue。
 
 ## 提 PR
 

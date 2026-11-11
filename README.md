@@ -1,10 +1,10 @@
 # QQ ↔ DeepSeek Harness 桥接
 
-[![license](https://img.shields.io/github/license/h-D-ACE/dsh-qq)](LICENSE)
-[![release](https://img.shields.io/github/v/release/h-D-ACE/dsh-qq)](https://github.com/h-D-ACE/dsh-qq/releases)
-[![audit](https://github.com/h-D-ACE/dsh-qq/actions/workflows/audit.yml/badge.svg)](https://github.com/h-D-ACE/dsh-qq/actions/workflows/audit.yml)
+[![license](https://img.shields.io/github/license/HUICHEN4/dsh-qq-enhanced)](LICENSE)
+[![release](https://img.shields.io/github/v/release/HUICHEN4/dsh-qq-enhanced)](https://github.com/HUICHEN4/dsh-qq-enhanced/releases)
+[![audit](https://github.com/HUICHEN4/dsh-qq-enhanced/actions/workflows/audit.yml/badge.svg)](https://github.com/HUICHEN4/dsh-qq-enhanced/actions/workflows/audit.yml)
 
-**支持系统：Windows · macOS · Linux**（qq-bridge-enhanced v1.1.3 · 仓库 <https://github.com/h-D-ACE/dsh-qq>）
+**支持系统：Windows · macOS · Linux**（qq-bridge-enhanced v1.1.3 · 仓库 <https://github.com/HUICHEN4/dsh-qq-enhanced>）
 
 **English**: [README.en.md](README.en.md) | **中文**: [README.md](README.md)
 
@@ -27,7 +27,7 @@
 
 **别自己照着敲**——把下面这句丢给 DSH，让它来装：
 
-> 克隆 <https://github.com/h-D-ACE/dsh-qq> 到本地，按 README 的「安装」把依赖装好、复制 config.example.json 为 config.json 并引导我填群号和 QQ 账号，然后启动控制中心。
+> 克隆 <https://github.com/HUICHEN4/dsh-qq-enhanced> 到本地，按 README 的「安装」把依赖装好、复制 config.example.json 为 config.json 并引导我填群号和 QQ 账号，然后启动控制中心。
 
 DSH 会自己拉仓库、装依赖、检查 Node / NapCat，缺什么直接问你要。装完在控制台扫码登录 QQ 小号即可。
 
@@ -37,10 +37,10 @@ DSH 会自己拉仓库、装依赖、检查 Node / NapCat，缺什么直接问�
 
 ## 🆕 增强版（qq-bridge-enhanced v1.1.3）—— 支持 Windows、macOS、Linux
 
-> 本仓库（<https://github.com/h-D-ACE/dsh-qq>）是 [Derpyu520/qq-bridge](https://github.com/Derpyu520/qq-bridge) v0.2.0-r3 的二次开发版本（来源与授权见 [NOTICE.md](NOTICE.md)），已合并上游 r4 的修复。
+> 本仓库（<https://github.com/HUICHEN4/dsh-qq-enhanced>）是 [Derpyu520/qq-bridge](https://github.com/Derpyu520/qq-bridge) v0.2.0-r3 的二次开发版本（来源与授权见 [NOTICE.md](NOTICE.md)），已合并上游 r4 的修复。
 > 原版的全部功能（消息桥接、多群白名单、reserved2 二代仿真、QQ 自主工具、人格、控制台、安全守卫、令牌统计、MCP、SnowLuma 健康检查）保持不变；
 > 下文「架构」之后的内容沿用上游文档并按本仓库现状更新过，仍然适用（部署请以本节和 [docs/DSH_DEPLOYMENT.md](docs/DSH_DEPLOYMENT.md) 为准）。
-> 问题反馈与 Release 下载请到本仓库：[Issues](https://github.com/h-D-ACE/dsh-qq/issues) · [Releases](https://github.com/h-D-ACE/dsh-qq/releases)。
+> 问题反馈与 Release 下载请到本仓库：[Issues](https://github.com/HUICHEN4/dsh-qq-enhanced/issues) · [Releases](https://github.com/HUICHEN4/dsh-qq-enhanced/releases)。
 
 | 新功能 | 一句话 | 文档 |
 | --- | --- | --- |
@@ -126,7 +126,7 @@ NapCat 要在它的 WebUI 里开启 WebSocket 服务端 `127.0.0.1:3001`）。�
 > [`v0.1.5`](https://github.com/Derpyu520/qq-bridge/releases/tag/v0.1.5)；**DSH 0.1.7-rc.2** 用
 > [`v0.1.7`](https://github.com/Derpyu520/qq-bridge/releases/tag/v0.1.7)（这些是原版仓库的旧版本，本仓库不再维护）。
 >
-> 本仓库默认分支 `main` **就是**最新版本，`git clone https://github.com/h-D-ACE/dsh-qq.git` 直接拿到，无需切换分支；也可以下载 [Release ZIP](https://github.com/h-D-ACE/dsh-qq/releases)。
+> 本仓库默认分支 `main` **就是**最新版本，`git clone https://github.com/HUICHEN4/dsh-qq-enhanced.git` 直接拿到，无需切换分支；也可以下载 [Release ZIP](https://github.com/HUICHEN4/dsh-qq-enhanced/releases)。
 
 ```
 QQ 消息 ──► SnowLuma / NapCat（OneBot v11 WS，可经接口平台）──► 本桥接进程 ──► DSH Web API（命令行版 127.0.0.1:3080 / 桌面版自动识别）
@@ -249,7 +249,7 @@ node scripts/setup-dsh.mjs
 
 2. **装桥接并复制配置**
    ```bash
-   git clone https://github.com/h-D-ACE/dsh-qq.git
+   git clone https://github.com/HUICHEN4/dsh-qq-enhanced.git
    cd dsh-qq
    npm ci
    ```
@@ -453,6 +453,8 @@ SnowLuma 同一个账号的 **HTTP token（默认 3000 端口）与 WebSocket to
 关掉后**只自愈 token**（换账号仍能恢复），绝不动 URL、也不写回 URL。
 
 ## 关于这个项目
+
+> 本项目最初由 [h-D-ACE](https://github.com/h-D-ACE/dsh-qq) 托管并做过一轮增强（v1.1.2 及之前的功能在这里继续保留），2026-11 起迁到当前仓库 `HUICHEN4/dsh-qq-enhanced` 独立维护。上游来源仍是 [Derpyu520/qq-bridge](https://github.com/Derpyu520/qq-bridge)。
 
 这是作者的第一个开源项目。代码主要由 DSH 里的 AI agent 边写边测完成，作者负责定方向、看行为、拍板——所以你会看到很细的注释和不怎么「标准」的提交历史，这是真的。
 

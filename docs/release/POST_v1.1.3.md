@@ -15,7 +15,7 @@ DSH 里跑着 agent，但消息只能从聊天窗口进。这个项目把它接�
 
 **装法**：别自己敲命令。把下面这句丢给 DSH：
 
-> 克隆 https://github.com/h-D-ACE/dsh-qq 到本地，按 README 把依赖装好，复制 config.example.json 为 config.json 并引导我填群号和 QQ 账号，然后启动控制中心。
+> 克隆 https://github.com/HUICHEN4/dsh-qq-enhanced 到本地，按 README 把依赖装好，复制 config.example.json 为 config.json 并引导我填群号和 QQ 账号，然后启动控制中心。
 
 缺 Node、缺 NapCat 它会直接问你要。装完控制台扫码登录 QQ 小号。
 
@@ -23,5 +23,5 @@ DSH 里跑着 agent，但消息只能从聊天窗口进。这个项目把它接�
 
 **已知限制**：依赖 NapCat 登录，属于第三方协议端，稳定性和风控不在我们控制范围；只在 Windows 上长期跑过，macOS/Linux 有 CI 但没长时间验证。
 
-仓库：https://github.com/h-D-ACE/dsh-qq
+仓库：https://github.com/HUICHEN4/dsh-qq-enhanced
 问题与交流：Issues / Discussions

@@ -4,7 +4,7 @@
 > **约定**：每一步都写明「在哪个目录执行 / 前置条件 / 预期结果」。命令分 **Windows（PowerShell）** 与 **macOS（终端 zsh）** 两套，
 > 只有一套的地方表示两边相同。**不要猜测配置字段**——所有字段都在本文第 7 节与
 > [guides/CONFIGURATION.md](guides/CONFIGURATION.md) 里有说明；没写到的字段保持模板默认值。
-> 仓库：https://github.com/h-D-ACE/dsh-qq
+> 仓库：https://github.com/HUICHEN4/dsh-qq-enhanced
 >
 > **硬性边界（部署 agent 必须遵守）**
 > 1. **不要**下载、安装、启动 QQ 后端（SnowLuma / NapCat），也**不要**登录 QQ —— 这些必须由用户本人完成（QQ 登录需要用户扫码；
@@ -192,7 +192,7 @@ nc -z 127.0.0.1 3001 && echo OK          # 预期 OK
 > 由 DSH agent 部署时：DSH 的沙箱可能**不允许在工作区里写入可执行文件或解压 ZIP**（报 EPERM / 拒绝访问）。
 > 遇到时请用户**手动创建**目标文件夹（必要时手动解压），再让 agent 在其中继续后面的步骤。
 
-**方式 A：Release ZIP（推荐）**——到 https://github.com/h-D-ACE/dsh-qq/releases 下载最新的 `qq-bridge-enhanced-v<版本>.zip`
+**方式 A：Release ZIP（推荐）**——到 https://github.com/HUICHEN4/dsh-qq-enhanced/releases 下载最新的 `qq-bridge-enhanced-v<版本>.zip`
 和同名 `.sha256`，校验后解压：
 
 ```powershell
@@ -211,7 +211,7 @@ unzip qq-bridge-enhanced-v<版本>.zip && cd qq-bridge-enhanced-v<版本>
 **方式 B：git**
 
 ```
-git clone https://github.com/h-D-ACE/dsh-qq.git qq-bridge-enhanced
+git clone https://github.com/HUICHEN4/dsh-qq-enhanced.git qq-bridge-enhanced
 cd qq-bridge-enhanced
 ```
 

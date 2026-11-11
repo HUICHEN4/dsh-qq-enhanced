@@ -1,6 +1,6 @@
 # 如何发布到你自己的 GitHub 仓库与 Release
 
-> 本仓库**不会**自动推送到任何地方。以下步骤由你（仓库所有者）手动执行。示例仓库名 `h-D-ACE/dsh-qq`。
+> 本仓库**不会**自动推送到任何地方。以下步骤由你（仓库所有者）手动执行。示例仓库名 `HUICHEN4/dsh-qq-enhanced`。
 
 ## 1. 发布前检查（在仓库根目录）
 
@@ -17,7 +17,7 @@ git status --short                 # 确认没有 config.json / state/ / node_mo
 ## 2. 推送源码
 
 ```powershell
-git remote add origin https://github.com/h-D-ACE/dsh-qq.git   # 已经设置过 origin 就跳过这一行
+git remote add origin https://github.com/HUICHEN4/dsh-qq-enhanced.git   # 已经设置过 origin 就跳过这一行
 git push -u origin main
 git tag -a v1.1.2 -m "qq-bridge-enhanced v1.1.2"
 git push origin v1.1.2
@@ -47,11 +47,11 @@ npm run release:zip
 
 ```powershell
 gh release create v1.1.2 ../release/qq-bridge-enhanced-v1.1.2.zip ../release/qq-bridge-enhanced-v1.1.2.zip.sha256 `
-  --repo h-D-ACE/dsh-qq --title "qq-bridge-enhanced v1.1.2" --notes-file docs/release/RELEASE_NOTES_v1.1.2.md
+  --repo HUICHEN4/dsh-qq-enhanced --title "qq-bridge-enhanced v1.1.2" --notes-file docs/release/RELEASE_NOTES_v1.1.2.md
 ```
 
 **不要**把 SnowLuma 的安装包、`node_modules`、你的 `config.json` 或 `state/` 作为 Release 附件上传。
 
 ## 5. 发布后
 
-部署时把仓库地址 https://github.com/h-D-ACE/dsh-qq 和 `docs/DSH_DEPLOYMENT.md` 交给 DSH agent 即可。
+部署时把仓库地址 https://github.com/HUICHEN4/dsh-qq-enhanced 和 `docs/DSH_DEPLOYMENT.md` 交给 DSH agent 即可。

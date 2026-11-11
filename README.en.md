@@ -1,14 +1,14 @@
 # QQ ↔ DeepSeek Harness Bridge (qq-bridge-enhanced)
 
-**Supported systems: Windows · macOS · Linux** (qq-bridge-enhanced v1.1.3 · repository <https://github.com/h-D-ACE/dsh-qq>)
+**Supported systems: Windows · macOS · Linux** (qq-bridge-enhanced v1.1.3 · repository <https://github.com/HUICHEN4/dsh-qq-enhanced>)
 
 **English**: [README.en.md](README.en.md) | **中文**: [README.md](README.md)
 
-> **qq-bridge-enhanced v1.1.3** ([h-D-ACE/dsh-qq](https://github.com/h-D-ACE/dsh-qq)) — a fork of [Derpyu520/qq-bridge](https://github.com/Derpyu520/qq-bridge) v0.2.0-r3 (with the upstream r4 fixes merged in; origin and licensing in [NOTICE.md](NOTICE.md)).
+> **qq-bridge-enhanced v1.1.3** ([HUICHEN4/dsh-qq-enhanced](https://github.com/HUICHEN4/dsh-qq-enhanced)) — a fork of [Derpyu520/qq-bridge](https://github.com/Derpyu520/qq-bridge) v0.2.0-r3 (with the upstream r4 fixes merged in; origin and licensing in [NOTICE.md](NOTICE.md)).
 > It turns one QQ account into an "AI group member" driven by DeepSeek Harness (DSH) agents, and runs on **Windows, macOS and Linux**.
 > Most documentation is in Chinese: the step-by-step deployment guide is [docs/DSH_DEPLOYMENT.md](docs/DSH_DEPLOYMENT.md), the changelog is [CHANGELOG.md](CHANGELOG.md),
 > and the documentation index is [docs/README.md](docs/README.md).
-> Issues and release downloads: [Issues](https://github.com/h-D-ACE/dsh-qq/issues) · [Releases](https://github.com/h-D-ACE/dsh-qq/releases).
+> Issues and release downloads: [Issues](https://github.com/HUICHEN4/dsh-qq-enhanced/issues) · [Releases](https://github.com/HUICHEN4/dsh-qq-enhanced/releases).
 
 QQ friends/groups become DSH conversations, and agent replies (including questions and tool approvals) are sent back to QQ.
 
