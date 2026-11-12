@@ -72,13 +72,30 @@ server.tool(
   }
 );
 
+// 2026-11-12：默认抓取上限从 50000 收到 12000。整页 HTML 动辄数十万字符，
+// 一次抓取就能把 1.6 万 token 灌进上下文（QQ 侧一轮成本里占一半），而多数问题
+// 只需要正文前面这几段。需要更多时由调用方显式传 maxChars。
+const WEB_FETCH_DEFAULT_CHARS = 12000;
+const WEB_FETCH_MAX_CHARS = 50000;
 server.tool(
   'web_fetch',
-  '只读抓取 HTTP(S) 网页正文，返回纯文本/HTML 前 50000 字符。禁止访问内网/本机地址，不执行任何本地操作。',
-  { url: z.string().describe('要抓取的 http(s) URL') },
-  async ({ url }) => {
+  '只读抓取 HTTP(S) 网页正文（HTML/纯文本）。默认返回前 12000 字符；内容被截断时返回体里 truncated=true，判断已给的部分不够再传 maxChars 要更多（最大 50000）。禁止访问内网/本机地址，不执行任何本地操作。',
+  {
+    url: z.string().describe('要抓取的 http(s) URL'),
+    maxChars: z
+      .number()
+      .int()
+      .positive()
+      .max(WEB_FETCH_MAX_CHARS)
+      .optional()
+      .describe('最多返回多少字符，默认 12000，上限 50000；只在默认截断且确实需要更多正文时才给'),
+  },
+  async ({ url, maxChars }) => {
     try {
-      const result = await safeFetch(url);
+      const limit = Number.isSafeInteger(maxChars) && maxChars > 0
+        ? Math.min(maxChars, WEB_FETCH_MAX_CHARS)
+        : WEB_FETCH_DEFAULT_CHARS;
+      const result = await safeFetch(url, limit);
       return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
     } catch (error) {
       return {
