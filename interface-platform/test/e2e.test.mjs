@@ -72,7 +72,8 @@ async function ready(s, account = 'qq:10001') {
 test('健康阶梯：连上游 → 识别账号 → 心跳 good 后才算收发就绪；离线心跳回落', T15, async () => {
   const s = await setup();
   try {
-    const acc = await until(() => s.platform.accounts().find((a) => a.account === 'qq:10001'));
+    // 账号出现 ≠ 昵称就绪：get_login_info 是登录后异步回的，慢机器上会先看到 nickname=null
+    const acc = await until(() => s.platform.accounts().find((a) => a.account === 'qq:10001' && a.nickname));
     assert.equal(acc.health.backendReachable, true);
     assert.equal(acc.health.loggedIn, true);
     assert.equal(acc.health.ioReady, false, '没有心跳之前不能说收发就绪');
