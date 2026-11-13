@@ -12566,7 +12566,14 @@ async function main() {
         }
       }
     }
-    if (tr.question && isDirectedAtAi(plainContent)) return 'question';
+    // 2026-11-13：别人 @ 某位群友（不是机器人）时，「你…吗/怎么」问的是那位，不是 AI。
+    // 例：「@滚木爱丽丝 你是银趴主角，没你大家还不知道怎么办」会命中 (你|您).{0,10}(怎么)，白唤醒一次。
+    const atOthers = Array.isArray(event?.message) && event.message.some((seg) => {
+      if (seg?.type !== 'at') return false;
+      const qq = String(seg.data?.qq ?? '');
+      return qq && qq !== 'all' && qq !== String(event?.self_id ?? '');
+    });
+    if (tr.question && !atOthers && isDirectedAtAi(plainContent)) return 'question';
     if (Array.isArray(tr.speakerIds) && tr.speakerIds.length) {
       const speakerId = String(event?.user_id ?? event?.sender?.user_id ?? '');
       if (speakerId && tr.speakerIds.some((id) => String(id) === speakerId)) {
