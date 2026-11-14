@@ -780,6 +780,31 @@ if (cfg.socialV2?.tools?.sendPoke !== false) {
   );
 }
 
+if (cfg.socialV2?.tools?.recall !== false) {
+  server.tool(
+    'qq_recall',
+    '撤回自己刚发出去的消息。不传 messageId 就撤这条会话里我最近发的一条；只能撤自己发的，撤别人的会被拒。QQ 大约只允许 2 分钟内撤回，超时会失败；别频繁撤，撤错了再补一句比悄悄删更自然。',
+    {
+      key: z.string().describe('会话 key，格式 group:群号 或 private:QQ号'),
+      token: z.string().describe('会话令牌（见唤醒提示中的【会话令牌】）'),
+      messageId: z.union([z.number(), z.string()]).optional().describe('要撤回的消息 id（QQ 消息 id 可能为负）；不传则撤我最近发的一条')
+    },
+    async ({ key, token, messageId }) => {
+      try {
+        const data = await agentApi('/api/socialV2/recall', {
+          method: 'POST',
+          body: JSON.stringify({ key, messageId: messageId != null ? String(messageId) : '' }),
+          headers: { 'x-agent-token': token },
+          timeoutMs: 60000
+        });
+        return { content: [{ type: 'text', text: serializeModelData(data) }] };
+      } catch (error) {
+        return { content: [{ type: 'text', text: `撤回失败：${error?.message ?? error}` }], isError: true };
+      }
+    }
+  );
+}
+
 server.tool(
   'qq_wait_for_messages',
   '等待分两种用途。首答前已读消息、只想确认有没有补充：用 purpose="reply"，按最后来信时间补足 quietMs 静默，已安静足够就立即返回；读取/思考时新到的消息也会返回，新消息重算静默。timeoutMs 是最长预算，不要求等满；预算到但 quiet=false 不代表对方已说完。此用途只用于回复前的短静默。等对方继续说、等回复或睡前观察：用默认 purpose="messages"；先等新消息，收到后才按 quietMs 等静默，没有新消息会等到 timeoutMs，单传 quietMs 不会缩短总等待。静默下限由后台配置，默认 10000ms。直接看 newMessages、unreadCount 和 readThroughSeq，返回消息无需重复查询；仍有未展示未读才补读。决定潜水/收尾时直接设置唤醒配置或 mark_read 即可，不需要再用默认用途长等观察。全程无人说话返回 preSleepWaitSatisfied=true；观察期间来了新消息返回 preSleepWaitObserved=true，读后不需参与可收尾，参与回复则下次收尾重新观察。preSleepWaitRemainingMs 仅供准备收尾时参考。',

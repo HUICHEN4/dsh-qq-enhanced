@@ -202,6 +202,7 @@
       "getImages": true,
       "getForwardMsg": true,
       "sendPoke": true,
+      "recall": true,
       "listStickers": true,
       "getStickerImage": true,
       "sendSticker": true,
