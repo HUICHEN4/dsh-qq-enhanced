@@ -6,6 +6,9 @@ qq-bridge-enhanced 是 [Derpyu520/qq-bridge](https://github.com/Derpyu520/qq-bri
 Copyright (c) 2026 Derpyu520 and qq-bridge / QSH contributors）的二次开发版本，基线为上游 `v0.2.0-r3`
 （源码包 `qq-bridge-0.2.0-r3.zip`，与上游 `main` 分支一致）。
 
+直接的上游是 [h-D-ACE/dsh-qq](https://github.com/h-D-ACE/dsh-qq) 的 `qq-bridge-enhanced v1.1.2`：
+它先把 qq-bridge 适配到 DeepSeek Harness，本仓库从 v1.1.2 继续，v1.1.3 起的新改动在本仓库。
+
 - 上游的全部代码、文档与资源仍按上游 [LICENSE](LICENSE)（MIT）授权；本仓库保留上游的版权声明与 LICENSE 全文。
 - v0.3.0 新增与修改的部分同样以 MIT 许可发布。新增文件主要位于 `src/social/`、`src/admin/`、`src/lib/`、
   `src/bridge-extensions.js`、`dsh/agent-presets/qq-agent-readonly/`、`scripts/test-continuity.mjs` 等，
@@ -30,7 +33,8 @@ Release ZIP **不包含** `node_modules`、SnowLuma 的任何文件、DSH 的任
 
 - [Derpyu520/qq-bridge](https://github.com/Derpyu520/qq-bridge) 的作者与所有贡献者：本项目的架构、
   接续机制、工具协议、控制中心与接口平台都建立在他们的工作之上。
-- [h-D-ACE](https://github.com/h-D-ACE/dsh-qq)：2026-11 之前在其实例仓库里做过一轮增强，那些功能被保留下来。
+- [h-D-ACE](https://github.com/h-D-ACE/dsh-qq)：本仓库直接基于的 qq-bridge-enhanced v1.1.2，把 qq-bridge 适配到
+  DeepSeek Harness 并加上了接口平台、控制中心、跨群认人与分层人物记忆；v1.1.3 起的新改动在本仓库继续。
 - DeepSeek Harness、NapCat、SnowLuma 的维护者：桥接只是站在这些组件中间做翻译。
 - 群里提意见的人：很多行为改动来自真实使用反馈，而不是设计阶段的想象。
 - **Alice**：跑在作者电脑上的 DSH agent，本项目大部分代码、测试与文档的实际执笔者。

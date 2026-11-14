@@ -64,7 +64,7 @@ DSH 会自己拉仓库、装依赖、检查 Node / NapCat，缺什么直接问�
 
 ## 🆕 增强版（qq-bridge-enhanced v1.1.3）—— 支持 Windows、macOS、Linux
 
-> 本仓库（<https://github.com/HUICHEN4/dsh-qq-enhanced>）是 [Derpyu520/qq-bridge](https://github.com/Derpyu520/qq-bridge) v0.2.0-r3 的二次开发版本（来源与授权见 [NOTICE.md](NOTICE.md)），已合并上游 r4 的修复。
+> 本仓库（<https://github.com/HUICHEN4/dsh-qq-enhanced>）承接 [h-D-ACE/dsh-qq](https://github.com/h-D-ACE/dsh-qq) 的 qq-bridge-enhanced v1.1.2，再往上是 [Derpyu520/qq-bridge](https://github.com/Derpyu520/qq-bridge) v0.2.0-r3（来源与授权见 [NOTICE.md](NOTICE.md)），已合并上游 r4 的修复。
 > 原版的全部功能（消息桥接、多群白名单、reserved2 二代仿真、QQ 自主工具、人格、控制台、安全守卫、令牌统计、MCP、SnowLuma 健康检查）保持不变；
 > 下文「架构」之后的内容沿用上游文档并按本仓库现状更新过，仍然适用（部署请以本节和 [docs/DSH_DEPLOYMENT.md](docs/DSH_DEPLOYMENT.md) 为准）。
 > 问题反馈与 Release 下载请到本仓库：[Issues](https://github.com/HUICHEN4/dsh-qq-enhanced/issues) · [Releases](https://github.com/HUICHEN4/dsh-qq-enhanced/releases)。
@@ -484,11 +484,12 @@ SnowLuma 同一个账号的 **HTTP token（默认 3000 端口）与 WebSocket to
 
 这个项目的骨架不是从零写的，站在一个很扎实的上游上：
 
-- **[Derpyu520/qq-bridge](https://github.com/Derpyu520/qq-bridge)** —— 原始项目（MIT）。接续机制、工具协议、
-  状态持久化、控制中心与接口平台都来自这里；本仓库是它的二次开发版本，基线 `v0.2.0-r3`，并合并了上游 `r4` 的修复。
+- **[Derpyu520/qq-bridge](https://github.com/Derpyu520/qq-bridge)** —— 原始项目（MIT）。消息桥接、多群白名单、
+  reserved2 二代仿真、接续机制、工具协议、状态持久化都来自这里；本仓库的基线是 `v0.2.0-r3`，并合并了上游 `r4` 的修复。
   上游 LICENSE 原文保留在 [LICENSE](LICENSE)，来源与授权细节见 [NOTICE.md](NOTICE.md)。
-- **[h-D-ACE/dsh-qq](https://github.com/h-D-ACE/dsh-qq)** —— 2026-11 之前在它名下托管并做过一轮增强，
-  v1.1.2 及之前的那批功能都留在本仓库里。
+- **[h-D-ACE/dsh-qq](https://github.com/h-D-ACE/dsh-qq)** —— **本仓库直接基于的版本**：把 qq-bridge 适配到
+  DeepSeek Harness 的增强版（`qq-bridge-enhanced v1.1.2`）。接口平台、控制中心、跨群认人、分层人物记忆、
+  DSH 部署文档这些，都是他先做出来的；v1.1.3 起才在本仓库继续改。
 - **DeepSeek Harness** —— 桥接的宿主：消息变成 DSH 会话、工具调用、上下文压缩、会话日志，都是 DSH 提供的。
 - **NapCat**（现在推荐的 QQ 协议端）与 **SnowLuma**（早期部署） —— 桥接只按 OneBot 11 协议跟它们讲话，不打包、不改它们。
 - **群里的各位** —— 行为上的问题几乎都是被骂出来的：唤醒太黏、接话像配旁白、图片烧 token，
@@ -502,7 +503,7 @@ SnowLuma 同一个账号的 **HTTP token（默认 3000 端口）与 WebSocket to
 
 ## 关于这个项目
 
-> 本项目最初由 [h-D-ACE](https://github.com/h-D-ACE/dsh-qq) 托管并做过一轮增强（v1.1.2 及之前的功能在这里继续保留），2026-11 起迁到当前仓库 `HUICHEN4/dsh-qq-enhanced` 独立维护。上游来源仍是 [Derpyu520/qq-bridge](https://github.com/Derpyu520/qq-bridge)。
+> 本项目直接基于 [h-D-ACE/dsh-qq](https://github.com/h-D-ACE/dsh-qq) 的 qq-bridge-enhanced v1.1.2（他把 [Derpyu520/qq-bridge](https://github.com/Derpyu520/qq-bridge) 适配到 DeepSeek Harness），v1.1.3 起在 `HUICHEN4/dsh-qq-enhanced` 独立维护。
 
 这是作者的第一个开源项目。代码主要由 DSH 里的 AI agent 边写边测完成，作者负责定方向、看行为、拍板——所以你会看到很细的注释和不怎么「标准」的提交历史，这是真的。
 
