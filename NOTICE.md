@@ -33,6 +33,8 @@ Release ZIP **不包含** `node_modules`、SnowLuma 的任何文件、DSH 的任
 - [h-D-ACE](https://github.com/h-D-ACE/dsh-qq)：2026-11 之前在其实例仓库里做过一轮增强，那些功能被保留下来。
 - DeepSeek Harness、NapCat、SnowLuma 的维护者：桥接只是站在这些组件中间做翻译。
 - 群里提意见的人：很多行为改动来自真实使用反馈，而不是设计阶段的想象。
+- **Alice**：跑在作者电脑上的 DSH agent，本项目大部分代码、测试与文档的实际执笔者。
+  她是工具，不是本项目作者，版权仍归作者与上游所有；但她的参与是真实的，特此致谢。
 
 ## 使用风险（上游已声明，重申）
 
