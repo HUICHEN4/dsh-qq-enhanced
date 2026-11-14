@@ -31,8 +31,8 @@ Release ZIP **不包含** `node_modules`、SnowLuma 的任何文件、DSH 的任
 
 ## 致谢
 
-- [Derpyu520/qq-bridge](https://github.com/Derpyu520/qq-bridge) 的作者与所有贡献者：本项目的架构、
-  接续机制、工具协议、控制中心与接口平台都建立在他们的工作之上。
+- [Derpyu520/qq-bridge](https://github.com/Derpyu520/qq-bridge) 的作者与所有贡献者：消息桥接、多群白名单、
+  reserved2 二代仿真、接续机制、工具协议、状态持久化都建立在他们的工作之上。
 - [h-D-ACE](https://github.com/h-D-ACE/dsh-qq)：本仓库直接基于的 qq-bridge-enhanced v1.1.2，把 qq-bridge 适配到
   DeepSeek Harness 并加上了接口平台、控制中心、跨群认人与分层人物记忆；v1.1.3 起的新改动在本仓库继续。
 - DeepSeek Harness、NapCat、SnowLuma 的维护者：桥接只是站在这些组件中间做翻译。
