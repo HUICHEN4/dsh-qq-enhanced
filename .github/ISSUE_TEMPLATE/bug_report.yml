@@ -6,6 +6,7 @@ body:
     attributes:
       value: |
         提问前先翻 [TROUBLESHOOTING](../../blob/main/docs/guides/TROUBLESHOOTING.md)，多数连接问题那里有现成答案。
+        **不会写？** 把 README「出了问题？让你自己的 Alice 帮你报 issue」那段复制给你本地的 DSH，它会读日志、判断是哪类问题、替你按这个模板写。
         **贴日志前把 QQ 号、群号、机器路径打码。**
         装不上 / 连不上 / 不唤醒这类问题，先去 [Discussions 安装踩坑集中帖](https://github.com/HUICHEN4/dsh-qq-enhanced/discussions/1) 看一眼。
   - type: textarea

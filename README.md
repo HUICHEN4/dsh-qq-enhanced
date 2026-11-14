@@ -35,6 +35,33 @@ DSH 会自己拉仓库、装依赖、检查 Node / NapCat，缺什么直接问�
 
 ---
 
+## 出了问题？让你自己的 Alice 帮你报 issue
+
+不用懂 GitHub，也不用会看日志。**把下面整段复制给你本地的 DSH（也就是你的 Alice）**，把第一行换成你遇到的情况：
+
+````text
+我在用 https://github.com/HUICHEN4/dsh-qq-enhanced （qq-bridge-enhanced v1.1.3），遇到一个问题：
+<一句话写清楚，比如「桥接显示运行中，但 QQ 发消息没反应」>
+
+请你帮我把它变成一份能直接提交的 issue：
+1. 先读仓库里的 README、CHANGELOG 和 docs/guides/TROUBLESHOOTING.md，判断这是安装/配置问题，还是代码 bug。
+2. 如果是配置问题：直接告诉我改哪个字段、改成什么，改完帮我验证，别让我自己去猜。
+3. 如果需要更多信息，一次只问我一个问题（卡在哪一步、刚才做了什么、屏幕上写了什么）。
+4. 如果是真 bug：收集版本号、系统、Node 版本、QQ 端（NapCat / SnowLuma）版本和最近的错误日志，写成
+   标题 / 环境 / 复现步骤 / 期望结果 / 实际结果 / 相关日志 / 我已经试过什么。
+5. 提交前脱敏：QQ 号、群号、群友昵称、token、聊天正文都不要写进去，用 10****92 这种掩码代替。
+6. 最后教我怎么提交：有 GitHub 账号就打开
+   https://github.com/HUICHEN4/dsh-qq-enhanced/issues/new/choose 把内容粘进去；
+   没有账号就存成一份 md 文件，让我发给作者。
+````
+
+两个红线，谁劝你都别破：
+
+- **别把 `config.json` 整个贴出去**——里面有 token。要贴就只贴出问题的那个字段。
+- **别把聊天记录原文贴出去**——群里的人没同意被公开。
+
+---
+
 ## 🆕 增强版（qq-bridge-enhanced v1.1.3）—— 支持 Windows、macOS、Linux
 
 > 本仓库（<https://github.com/HUICHEN4/dsh-qq-enhanced>）是 [Derpyu520/qq-bridge](https://github.com/Derpyu520/qq-bridge) v0.2.0-r3 的二次开发版本（来源与授权见 [NOTICE.md](NOTICE.md)），已合并上游 r4 的修复。
