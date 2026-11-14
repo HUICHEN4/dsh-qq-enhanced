@@ -26,6 +26,14 @@ Copyright (c) 2026 Derpyu520 and qq-bridge / QSH contributors）的二次开发�
 Release ZIP **不包含** `node_modules`、SnowLuma 的任何文件、DSH 的任何文件，也不包含上游仓库曾附带的
 `@snowluma/mcp` 工具目录快照 `_snowluma-catalog.json`（v0.3.0 起移除并加入 .gitignore；没有任何代码引用它）。
 
+## 致谢
+
+- [Derpyu520/qq-bridge](https://github.com/Derpyu520/qq-bridge) 的作者与所有贡献者：本项目的架构、
+  接续机制、工具协议、控制中心与接口平台都建立在他们的工作之上。
+- [h-D-ACE](https://github.com/h-D-ACE/dsh-qq)：2026-11 之前在其实例仓库里做过一轮增强，那些功能被保留下来。
+- DeepSeek Harness、NapCat、SnowLuma 的维护者：桥接只是站在这些组件中间做翻译。
+- 群里提意见的人：很多行为改动来自真实使用反馈，而不是设计阶段的想象。
+
 ## 使用风险（上游已声明，重申）
 
 - SnowLuma 是非官方 QQ 协议实现，使用可能违反腾讯服务条款并导致账号受限，风险由使用者承担。

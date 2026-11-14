@@ -453,6 +453,22 @@ SnowLuma 同一个账号的 **HTTP token（默认 3000 端口）与 WebSocket to
 
 关掉后**只自愈 token**（换账号仍能恢复），绝不动 URL、也不写回 URL。
 
+## 鸣谢
+
+这个项目的骨架不是从零写的，站在一个很扎实的上游上：
+
+- **[Derpyu520/qq-bridge](https://github.com/Derpyu520/qq-bridge)** —— 原始项目（MIT）。接续机制、工具协议、
+  状态持久化、控制中心与接口平台都来自这里；本仓库是它的二次开发版本，基线 `v0.2.0-r3`，并合并了上游 `r4` 的修复。
+  上游 LICENSE 原文保留在 [LICENSE](LICENSE)，来源与授权细节见 [NOTICE.md](NOTICE.md)。
+- **[h-D-ACE/dsh-qq](https://github.com/h-D-ACE/dsh-qq)** —— 2026-11 之前在它名下托管并做过一轮增强，
+  v1.1.2 及之前的那批功能都留在本仓库里。
+- **DeepSeek Harness** —— 桥接的宿主：消息变成 DSH 会话、工具调用、上下文压缩、会话日志，都是 DSH 提供的。
+- **NapCat**（现在推荐的 QQ 协议端）与 **SnowLuma**（早期部署） —— 桥接只按 OneBot 11 协议跟它们讲话，不打包、不改它们。
+- **群里的各位** —— 行为上的问题几乎都是被骂出来的：唤醒太黏、接话像配旁白、图片烧 token，
+  这些都是真实反馈，不是想象出来的需求。
+
+如果你要 fork：上游的版权声明别删，改动写清楚。这份骨架是别人搭的。
+
 ## 关于这个项目
 
 > 本项目最初由 [h-D-ACE](https://github.com/h-D-ACE/dsh-qq) 托管并做过一轮增强（v1.1.2 及之前的功能在这里继续保留），2026-11 起迁到当前仓库 `HUICHEN4/dsh-qq-enhanced` 独立维护。上游来源仍是 [Derpyu520/qq-bridge](https://github.com/Derpyu520/qq-bridge)。
