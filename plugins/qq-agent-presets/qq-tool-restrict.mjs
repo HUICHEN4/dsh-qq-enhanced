@@ -194,6 +194,20 @@ const KNOWN_DANGEROUS_GLOBAL_TOOLS = [
 // 供 test-preset-local-tools.mjs 导入并与 DSH 真实工具名对账，避免两份名单漂移。
 export const RESTRICTED_TOOL_NAMES = Object.freeze([...KNOWN_DANGEROUS_GLOBAL_TOOLS])
 
+// 名单里**允许**在「当前安装里扫不到」的名字：它们来自可选 bundle（装了才注册），
+// 或来自已被取代的旧别名。保留是为了「装上/配回时立刻生效」——restrict 对未知名字
+// 抛错会被逐个 try/catch 吞掉，未装时不影响运行；但必须显式登记，否则与拼错的假名
+// 无法区分（假名 = 静默失效，恰恰是这套守卫最怕的失效方式）。
+// 单一权威在这里：test-preset-local-tools.mjs 与 verify-dsh-020-adaptation.mjs 都从这里取。
+export const OPTIONAL_BUNDLE_TOOL_NAMES = Object.freeze([
+  // dsh-ops 的快照/回滚/事故记录（装了该插件才有）
+  'dsh_snapshot', 'dsh_rollback', 'incident_resolved',
+  // Codex / Claude Code 子智能体 bundle（0.2.2 的 asar 里已无这两个名字）
+  'subagent_codex', 'subagent_claude_code',
+  // 官方文件工具的旧别名：现在由 read / ops_* 取代，只为兜住仍显式配置它的旧 profile
+  'read_file',
+])
+
 // 执行期白名单：不在这些范围内的工具一律拒绝。
 // 前缀覆盖 DSH MCP client 暴露的命名空间工具。
 const SAFE_PREFIXES = [

@@ -116,20 +116,17 @@ function collectDshToolNames() {
   return names.size === 0 ? null : new Set(names.keys());
 }
 /**
- * 不在 npm 版 DSH 里、只存在于**可选第三方 bundle** 的工具名：在装了该 bundle 的机器上真实存在，
+ * 不在当前安装里、只存在于**可选第三方 bundle** 的工具名：在装了该 bundle 的机器上真实存在，
  * 所以守卫必须继续 restrict 它们；在没装的机器上找不到属于正常情况，不算拼错的假名。
- *   dsh-plugin-guard（web profile 的可选 bundle）→ dsh_snapshot / dsh_rollback / incident_resolved
+ * 名单本身由守卫模块导出（单一权威），这里只取来用，避免两份会漂移的副本。
+ *   dsh-plugin-guard（可选 bundle）→ dsh_snapshot / dsh_rollback / incident_resolved
+ *   Codex / Claude Code 子智能体 bundle → subagent_codex / subagent_claude_code
+ *   官方文件工具的旧别名 → read_file
  */
-const OPTIONAL_BUNDLE_TOOL_NAMES = new Set([
-  'dsh_snapshot', 'dsh_rollback', 'incident_resolved',
-  // 0.2.2 的 asar 里已经没有这两个名字：它们来自可选的 Codex / Claude Code
-  // 子智能体 bundle（装了该 bundle 才有）。保留在守卫里是为了装上后立刻生效；
-  // 未装时 restrict 抛错被吞，不影响运行。
-  'subagent_codex', 'subagent_claude_code',
-  // 官方文件工具的别名：当前安装（0.2.2-rc.1）里查不到注册，文件能力由
-  // read / ops_* 取代；留在名单里只为兜住仍显式配置该别名的旧 profile。
-  'read_file',
-]);
+const { OPTIONAL_BUNDLE_TOOL_NAMES: OPTIONAL_BUNDLE_TOOL_NAMES_LIST } = await import(
+  pathToFileURL(path.join(ROOT, 'plugins', 'qq-agent-presets', 'qq-tool-restrict.mjs')).href
+);
+const OPTIONAL_BUNDLE_TOOL_NAMES = new Set(OPTIONAL_BUNDLE_TOOL_NAMES_LIST);
 /** 允许出现在名单里、但不属于"本地执行"语义的名字（开发/注入器）。 */
 const DEV_TOOL_PREFIX = /^dev_/;
 
