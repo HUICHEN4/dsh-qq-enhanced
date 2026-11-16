@@ -64,3 +64,70 @@ export function dshModulesDir() {
     + `  或设置 DSH_HOME 指向 DSH 根目录（当前解析为 ${home}）。`
   );
 }
+
+// 部署检查要看的**profile 目录**——本仓库的 bundle/patch 装在哪一个 profile 里。
+//
+// 沿革：verify 脚本曾把 profile 名写死成 `web`，而那只是 2026-11-06 留下的空骨架
+// （4 个文件、2 个 bundle）。真正在用的 `desktop` 有 14 个 bundle、装了
+// qq-mode-console 与 qq-agent-presets。写死名字的后果是 5 条部署断言全在查空气：
+// 看着报了 ❌，其实查的根本不是跑着的那个 profile。
+//
+// 解析顺序：
+//   1. DSH_PROFILE（显式指定，最高优先级）
+//   2. 扫 $DSH_HOME/profiles/*，按「像不像本仓库的部署目标」打分选最高分
+//   3. 同分时选 package.json mtime 最新的那个
+export function dshProfileDir() {
+  const home = dshHome();
+  const explicit = process.env.DSH_PROFILE;
+  if (explicit) {
+    const dir = path.join(home, 'profiles', explicit);
+    if (!fs.existsSync(path.join(dir, 'package.json'))) {
+      throw new Error(`DSH_PROFILE=${explicit} 指向的 profile 不存在：${dir}`);
+    }
+    return dir;
+  }
+
+  const roots = [];
+  try {
+    for (const e of fs.readdirSync(path.join(home, 'profiles'), { withFileTypes: true })) {
+      if (!e.isDirectory()) continue;
+      const dir = path.join(home, 'profiles', e.name);
+      if (fs.existsSync(path.join(dir, 'package.json'))) roots.push(dir);
+    }
+  } catch { /* profiles 目录不存在时落到下面的报错 */ }
+
+  if (roots.length === 0) {
+    throw new Error(
+      '无法定位 DSH profile 目录。\n'
+      + '  请设置 DSH_PROFILE=<profile 名> 后重试；\n'
+      + `  或设置 DSH_HOME 指向 DSH 根目录（当前解析为 ${home}）。`
+    );
+  }
+
+  const score = (dir) => {
+    let s = 0;
+    let mtime = 0;
+    try {
+      const pkgFile = path.join(dir, 'package.json');
+      mtime = fs.statSync(pkgFile).mtimeMs;
+      const pkg = JSON.parse(fs.readFileSync(pkgFile, 'utf8'));
+      const bundles = pkg?.dsh?.profile?.bundles ?? [];
+      const deps = pkg?.dependencies ?? {};
+      // 本仓库自己的 bundle 是最强信号：它只在自己被部署到的 profile 里。
+      if (bundles.includes('qq-agent-presets') || deps['qq-agent-presets']) s += 100;
+      if (bundles.includes('qq-mode-console') || deps['qq-mode-console']) s += 50;
+      if (fs.existsSync(path.join(dir, 'node_modules', 'qq-agent-presets'))) s += 40;
+      if (fs.existsSync(path.join(dir, 'node_modules'))) s += 10;
+      s += bundles.length;
+    } catch {
+      return { s: -1, mtime };
+    }
+    return { s, mtime };
+  };
+
+  const ranked = roots
+    .map((dir) => ({ dir, ...score(dir) }))
+    .sort((a, b) => b.s - a.s || b.mtime - a.mtime);
+
+  return ranked[0].dir;
+}

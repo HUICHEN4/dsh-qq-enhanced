@@ -30,7 +30,7 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
 import { randomUUID } from 'node:crypto';
-import { dshModulesDir } from './dsh-modules.mjs';
+import { dshModulesDir, dshProfileDir } from './dsh-modules.mjs';
 import { discoverDshSessionCookie, NodeApiClient, unwrap } from '../src/dsh-client.js';
 
 const ROOT = process.cwd();
@@ -73,7 +73,12 @@ for (const p of ['qq-chat', 'qq-chat-v2']) {
   let schemaOk = false;
   try { persona.Config(row.config); schemaOk = true; } catch {}
   check(`preset ${p}: persona.config 通过 DSH schema`, schemaOk);
-  check(`preset ${p}: 保留 {{model}} / {{cwd}} 变量`, /\{\{model\}\}/.test(row.config.prefix) && /\{\{cwd\}\}/.test(row.config.suffix ?? ''));
+  // DSH 0.2.1 起提示词变量只剩 provider / model：`{{cwd}}` 已被删除，覆盖 suffix 写它
+  // 会让每一轮直接报 `unknown prompt variable "{{cwd}}" in section "deployment:persona-suffix"`。
+  // 所以这里断言的是「保留 {{model}}，且绝不再出现 {{cwd}}」——与本仓库
+  // scripts/test-qq-preset-contract.mjs 的契约一致（旧断言恰好写反了）。
+  check(`preset ${p}: 保留 {{model}} 且不再使用 {{cwd}}`,
+    /\{\{model\}\}/.test(row.config.prefix) && !JSON.stringify(row.config).includes('{{cwd}}'));
 }
 
 // ── 2. 部署侧：DSH 0.1.7 的 preset 机制 ──────────────────────────────────────
@@ -114,7 +119,6 @@ const guardCode = guard
   .replace(/\/\*[\s\S]*?\*\//g, '')
   .split(/\r?\n/).map((l) => l.replace(/\/\/.*$/, '')).join('\n');
 check('守卫：非法工具名 fail-closed（不接受裸 return 放行）', !/typeof name !== 'string'[^\n]*\)\s*return\s*$/m.test(guardCode));
-check('守卫：不额外放行 web_search/web_fetch', !/'(?:web_search|web_fetch)'/.test(guardCode));
 check('守卫：拒绝 0.1.7 已删除的 cordis 旧工具名（避免静默失效）', !/cordis_(?:define|undefine|run|stop)/.test(guardCode));
 
 // 0.2.0 工具面重新对账的结果（扫描器与守卫必须一致）。
@@ -128,10 +132,16 @@ const GUARD_020_NAMES = [
   'team_task_create', 'team_task_get', 'team_task_list', 'team_task_update',
   'office_convert', 'office_recalculate', 'office_render',
   'plugin_manager',
-  'schedule_create', 'schedule_list', 'schedule_update', 'schedule_delete',
+  // 无人值守的自我调度。0.2.2-rc.3 的四件套是 create/list/edit/view；
+  // 旧断言里的 schedule_update/schedule_delete 早被改名（update→edit）或删除，是假名。
+  'schedule_create', 'schedule_list', 'schedule_edit', 'schedule_view',
 ];
 const guardMod = await import(pathToFileURL(canonicalGuardPath).href);
 const guardNames = new Set(guardMod.RESTRICTED_TOOL_NAMES ?? []);
+// 旧断言是「守卫源码里不许出现 web_search/web_fetch 字面量」，可这两个名字**本来就该在
+// restrict 名单里**（QQ 会话不给宿主直连联网工具，联网走 mcp__web-search-safe__ 代打）。
+// 字面量扫描分不清「放行」和「限制」，改成查导出的名单本身。
+check('守卫：宿主直连的 web_search/web_fetch 默认被限制', guardNames.has('web_search') && guardNames.has('web_fetch'));
 const missingFromGuard = GUARD_020_NAMES.filter((n) => !guardNames.has(n));
 check('守卫已覆盖 0.2.0 新增的危险工具名', missingFromGuard.length === 0, missingFromGuard.join(', ') || `${guardNames.size} 个名字`);
 
@@ -144,25 +154,38 @@ const scanned = collectDshToolNames();
 if (scanned.names.size === 0) {
   skip('守卫名单与 DSH 真实工具名对账', '未扫到任何 DSH 包（DSH 未安装？）');
 } else {
-  const fabricated = [...guardNames].filter((n) => !n.startsWith('dev_') && !scanned.names.has(n));
+  // 可选 bundle / 旧别名不算假名（名单由守卫模块导出，与 test-preset-local-tools.mjs 同源）。
+  const optional = new Set(guardMod.OPTIONAL_BUNDLE_TOOL_NAMES ?? []);
+  const fabricated = [...guardNames].filter((n) => !n.startsWith('dev_') && !optional.has(n) && !scanned.names.has(n));
   check('守卫名单无拼错的假名（restrict 不会静默失效）', fabricated.length === 0, fabricated.join(', ') || `扫过 ${scanned.packages.length} 个包`);
 }
 
-const patch = fs.readFileSync(path.join(DSH_HOME, 'profiles/web/cordis.patch.yml'), 'utf8');
+// 部署断言的检查对象必须是**跑着的那个 profile**。曾经这里写死 'web'，而真正在用的
+// 是 'desktop'（web 只是 2026-11-06 的空骨架：4 个文件、2 个 bundle），结果 5 条部署
+// 断言全在查空气——看着报了 ❌，其实查的根本不是跑着的那个 profile。
+const PROFILE_DIR = dshProfileDir();
+const PROFILE_NAME = path.basename(PROFILE_DIR);
+const patch = fs.readFileSync(path.join(PROFILE_DIR, 'cordis.patch.yml'), 'utf8');
 const patchDoc = yaml.load(patch);
 const mcpIds = patchDoc.filter((e) => e?.insert).flatMap((e) => e.insert.map((x) => x.id));
-check('profile patch 含 3 个 MCP 且无重复', mcpIds.length === 3 && new Set(mcpIds).size === 3, mcpIds.join(', '));
+check(`profile(${PROFILE_NAME}) patch 含 3 个 MCP 且无重复`, mcpIds.length === 3 && new Set(mcpIds).size === 3, mcpIds.join(', '));
 const snowlumaEntry = patchDoc.filter((e) => e?.insert).flatMap((e) => e.insert).find((x) => x.id === 'mcp-snowluma');
 check('mcp-snowluma 带 toolCallTimeoutMs=725000', snowlumaEntry?.config?.toolCallTimeoutMs === 725000);
+// MCP 入口必须指向**本仓库**的脚本文件。曾经断言字面量 'qq-bridge'，但仓库目录叫
+// dsh-qq（package 名才是 qq-bridge），于是永远为假——改成按路径归属判断。
 check('mcp 路径指向本仓库', mcpIds.every((id) => {
   const e = patchDoc.filter((x) => x?.insert).flatMap((x) => x.insert).find((y) => y.id === id);
-  return String(e.config.args[0]).includes('qq-bridge');
+  const arg = path.resolve(String(e?.config?.args?.[0] ?? ''));
+  return arg.startsWith(ROOT + path.sep);
 }));
 
-const pkg = JSON.parse(fs.readFileSync(path.join(DSH_HOME, 'profiles/web/package.json'), 'utf8'));
-check('profile bundles 含 qq-mode-console', pkg.dsh.profile.bundles.includes('qq-mode-console'));
-check('qq-mode-console link 依赖已注册', String(pkg.dependencies['qq-mode-console'] ?? '').startsWith('link:'));
-check('qq-mode-console 已 link 进 node_modules', fs.existsSync(path.join(DSH_HOME, 'profiles/web/node_modules/qq-mode-console')));
+const pkg = JSON.parse(fs.readFileSync(path.join(PROFILE_DIR, 'package.json'), 'utf8'));
+check(`profile(${PROFILE_NAME}) bundles 含 qq-mode-console`, (pkg.dsh?.profile?.bundles ?? []).includes('qq-mode-console'));
+// 本地插件依赖既可能是 `link:`（pnpm 的 link 协议），也可能是 `file:`（setup-dsh 实际写的，
+// 指向 ../../plugins/<name>）——两者都是「指向本机目录」，用版本号才是错的。
+const qqModeDep = String(pkg.dependencies?.['qq-mode-console'] ?? '');
+check(`profile(${PROFILE_NAME}) qq-mode-console 是本地依赖而非版本号`, /^(link:|file:)/.test(qqModeDep), qqModeDep || '(未声明)');
+check(`profile(${PROFILE_NAME}) 已 link 进 node_modules`, fs.existsSync(path.join(PROFILE_DIR, 'node_modules/qq-mode-console')));
 
 // ── 3. 仓库配置：模型 ───────────────────────────────────────────────────────
 const cfg = JSON.parse(fs.readFileSync(path.join(ROOT, 'config.json'), 'utf8'));
@@ -189,7 +212,13 @@ check('bridge.js 含 preset 清单/默认 preset 解析', bridgeSrc.includes('re
 check('preset 解析带 strict 开关', /resolvePresetName\(name, \{ strict = false \} = \{\}\)/.test(bridgeCode));
 check('非 closed-agent 模式以 strict 解析 preset', /resolvePresetName\(wanted, \{ strict: true \}\)/.test(bridgeCode));
 check('群聊模式缺少 preset 时拒绝建会话（fail-closed）', /strictPreset && !preset/.test(bridgeCode));
-check('群聊模式不再重试「无 preset」建会话', /strictPreset \? \[true\] : \[true, false\]/.test(bridgeCode));
+// v0.3.0 起不再「群聊才失败」，而是**所有模式**都不允许「无 preset」降级：
+// `const allowNoPresetFallback = false;` + 循环只在 [true] 上跑。旧断言匹配的
+// `strictPreset ? [true] : [true, false]` 已经不存在——那种写法会给 closed-agent 留一条
+// 落到 DSH 默认 preset（完整工具面、且没有桥接审批闸门）的路。断言跟着收紧。
+check('群聊模式不再重试「无 preset」建会话',
+  /const allowNoPresetFallback = false;/.test(bridgeCode)
+  && /allowNoPresetFallback \? \[true, false\] : \[true\]/.test(bridgeCode));
 
 // ── 3b. 版本身份一致性 ──────────────────────────────────────────────────────
 // v0.1.5 曾带着自称 0.1.2-alpha.1 的 package-lock.json 发布出去（package.json 却是
