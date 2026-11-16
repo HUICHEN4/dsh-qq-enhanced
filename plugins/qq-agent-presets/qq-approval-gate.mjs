@@ -24,8 +24,9 @@ const FILE_TOOLS = new Set(['read', 'read_image', 'glob', 'grep', 'write', 'edit
 const SAFE_PREFIXES = ['mcp__snowluma__', 'mcp__snowluma-host__', 'mcp__web-search-safe__']
 export const DENY_TOOLS = Object.freeze([
   'subagent', 'subagent_fork', 'subagent_codex', 'subagent_claude_code', 'list_subagent_models',
-  'send_message', 'interrupt_agent', 'list_agents', 'spawn_teammate',
+  'send_message', 'interrupt_agent', 'list_agents',
   'team_task_create', 'team_task_get', 'team_task_list', 'team_task_update',
+  'user_terminal_list', 'user_terminal_read',
   'workflow', 'ralph', 'plugin_manager', 'load_workspace_dependencies',
   'schedule_create', 'schedule_update', 'schedule_delete', 'schedule_list',
   'cordis_inspect_list', 'cordis_inspect_query', 'read_mcp_resource', 'list_mcp_resources', 'list_mcp_resource_templates',

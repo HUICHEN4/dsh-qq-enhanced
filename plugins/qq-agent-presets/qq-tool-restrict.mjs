@@ -89,7 +89,12 @@ export const inject = ['tools']
  *   ② 会派生 agent / 执行外部代码（当前只在 DSH 自带 preset 里挂载，QQ preset 不挂；
  *      列进来是**回归网**：别的 composition 一旦把它们推进全局层就被挡住）：
  *      · `subagent_codex` / `subagent_claude_code`（Codex / Claude Code 子智能体）
- *      · `spawn_teammate` / `team_task_create|get|list|update`（实验性 Team 模式）
+ *      · `team_task_create|get|list|update`（实验性 Team 模式）
+ *        —— 2026-11-16 针对 DSH 0.2.2-rc.3 对账：`spawn_teammate` **已被移除**
+ *        （`dsh-tool-agent-team` 现在只注册上面四个 team_task_*），留着它就是一个
+ *        假名，会让 `tools.restrict` 抛错被吞、整批限制静默失效。按「替换不是删除」
+ *        的原则核过：0.2.2-rc.3 里没有与之对应的新名字（派生 agent 走 `subagent` /
+ *        `subagent_fork`，已在名单里），所以这次是**删除**。
  *   ③ 等于把插件装载权交出去 ⇒ 任意代码执行：
  *      · `plugin_manager`（安装/卸载/启停插件，内部会 spawn pnpm）
  *   ④ 无人值守的自我调度（`dsh-schedule`，0.2.0 起是可选 bundle）：
@@ -122,7 +127,9 @@ const LOCAL_EXECUTION_TOOLS = [
   'list_mcp_resources', 'list_mcp_resource_templates', 'read_mcp_resource',
   //   ② 派生 agent / 执行外部代码
   'subagent_codex', 'subagent_claude_code',
-  'spawn_teammate', 'team_task_create', 'team_task_get', 'team_task_list', 'team_task_update',
+  'team_task_create', 'team_task_get', 'team_task_list', 'team_task_update',
+  //   用户终端面板（能读用户自己终端里的输出 ⇒ 信息泄漏，2026-11-16 补）
+  'user_terminal_list', 'user_terminal_read',
   //   ③ 插件装载权（= 任意代码执行）
   'plugin_manager',
   //   ④ 无人值守的自我调度
@@ -223,7 +230,7 @@ export const READONLY_AGENT_TOOLS = Object.freeze(['read', 'read_image', 'glob',
  */
 export const OPERATOR_DENY_TOOLS = Object.freeze([
   'subagent', 'subagent_fork', 'subagent_codex', 'subagent_claude_code', 'list_subagent_models',
-  'send_message', 'interrupt_agent', 'list_agents', 'spawn_teammate',
+  'send_message', 'interrupt_agent', 'list_agents',
   'team_task_create', 'team_task_get', 'team_task_list', 'team_task_update',
   'workflow', 'ralph', 'plugin_manager', 'load_workspace_dependencies',
   'schedule_create', 'schedule_list', 'schedule_edit', 'schedule_view',

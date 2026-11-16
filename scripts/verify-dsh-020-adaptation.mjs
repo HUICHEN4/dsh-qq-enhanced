@@ -118,7 +118,7 @@ check('守卫：拒绝 0.1.7 已删除的 cordis 旧工具名（避免静默失�
 const GUARD_020_NAMES = [
   'list_mcp_resources', 'list_mcp_resource_templates', 'read_mcp_resource',
   'subagent_codex', 'subagent_claude_code',
-  'spawn_teammate', 'team_task_create', 'team_task_get', 'team_task_list', 'team_task_update',
+  'team_task_create', 'team_task_get', 'team_task_list', 'team_task_update',
   'plugin_manager',
   'schedule_create', 'schedule_list', 'schedule_update', 'schedule_delete',
 ];

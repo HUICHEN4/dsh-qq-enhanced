@@ -55,9 +55,14 @@ const CLOSED_AGENT_PRESETS = ['qsh-closed'];
  *   · 全局层默认启用、仿真会话真的会继承的三个 MCP 资源工具
  *     （`dsh-base` 的 `mcp-resources` 行没被 disabled）；
  *   · 派生 agent / 执行外部代码：subagent_codex / subagent_claude_code /
- *     spawn_teammate / team_task_*（现只在 DSH 自带 preset 里挂，列进来当回归网）；
+ *     team_task_*（现只在 DSH 自带 preset 里挂，列进来当回归网）；
  *   · plugin_manager（插件装载权 = 任意代码执行）；
  *   · schedule_*（无人值守的自我调度）。
+ *
+ * 2026-11-16 针对 DSH 0.2.2-rc.3 对账：`spawn_teammate` 已从 `dsh-tool-agent-team`
+ * 移除（现在只注册 team_task_create/get/list/update），留着它是假名 ⇒ 从本清单与
+ * 守卫名单一起删；同期补上 `user_terminal_list` / `user_terminal_read`（能读用户
+ * 自己终端面板的输出 ⇒ 信息泄漏）。
  */
 const LOCAL_EXECUTION_TOOLS = [
   'pwsh', 'bash',
@@ -75,7 +80,8 @@ const LOCAL_EXECUTION_TOOLS = [
   // 0.2.0 新增对账
   'list_mcp_resources', 'list_mcp_resource_templates', 'read_mcp_resource',
   'subagent_codex', 'subagent_claude_code',
-  'spawn_teammate', 'team_task_create', 'team_task_get', 'team_task_list', 'team_task_update',
+  'team_task_create', 'team_task_get', 'team_task_list', 'team_task_update',
+  'user_terminal_list', 'user_terminal_read',
   'plugin_manager',
   'schedule_create', 'schedule_list', 'schedule_edit', 'schedule_view',
   // 0.2.2 新增对账（从安装包 app.asar 抽出的真实工具名）
