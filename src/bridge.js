@@ -9085,7 +9085,7 @@ async function main() {
           markReadCalledKeys.delete(key);
           wakeConfigMissCount.delete(key);
           forgetAgentToken(key);
-          socialV2.conversations.delete(key);
+          resetConversationKeepingConfig(key);
           seenForwardIds.delete(key);
           // 按 key 记账的其余内存态（qq_wait_for_messages 的等待租约、发送失败标记、限流时间戳等）一并清掉：
           // 以前漏了等待租约，重置后新会话仍被旧租约挡住最长 15 分钟（「该会话已有一个等待中的 qq_wait_for_messages」）。
@@ -10541,6 +10541,38 @@ async function main() {
       setupSleepTimerV2(key);
     }
     return st;
+  }
+
+  /**
+   * 重置会话：只清「上下文」，保留这个群的「建制」。
+   *
+   * 以前三处重置（控制台清除上下文 / /api/socialV2/reset / /api/workspace/reset）
+   * 都是直接 conversations.delete(key)，连 wakeConfig、activeTopics、memberImpressions、
+   * ownerRules 一起丢掉；下次来消息时 getSocialV2State() 重建会话，配置回落到
+   * config.json 的默认值（那套关键词是给「小鲸鱼」人设准备的）。
+   *
+   * 现在改成：取出配置类字段 → 删除 → 立即重建 → 填回。重建出来的会话只带
+   * 空的 recentMessages / unread / 接续锚点 / 冷却计时，这才是「重开会话」该有的语义。
+   */
+  function resetConversationKeepingConfig(key) {
+    const prev = socialV2.conversations.get(key) ?? null;
+    const carried = prev ? {
+      wakeConfig: prev.wakeConfig,
+      activeTopics: prev.activeTopics,
+      pendingThoughts: prev.pendingThoughts,
+      memberImpressions: prev.memberImpressions,
+      ownerRules: prev.ownerRules
+    } : null;
+    socialV2.conversations.delete(key);
+    if (!carried) return null;
+    const fresh = getSocialV2State(key);
+    // 只搬仍然有值的字段；旧会话里是空数组/空对象时保持新对象原样，避免意外共享引用。
+    if (carried.wakeConfig) fresh.wakeConfig = carried.wakeConfig;
+    if (Array.isArray(carried.activeTopics) && carried.activeTopics.length) fresh.activeTopics = carried.activeTopics;
+    if (Array.isArray(carried.pendingThoughts) && carried.pendingThoughts.length) fresh.pendingThoughts = carried.pendingThoughts;
+    if (carried.memberImpressions && Object.keys(carried.memberImpressions).length) fresh.memberImpressions = carried.memberImpressions;
+    if (Array.isArray(carried.ownerRules) && carried.ownerRules.length) fresh.ownerRules = carried.ownerRules;
+    return fresh;
   }
 
   function loadSocialV2State() {
@@ -13869,7 +13901,7 @@ async function main() {
           markReadCalledKeys.delete(key);
           wakeConfigMissCount.delete(key);
           forgetAgentToken(key);
-          socialV2.conversations.delete(key);
+          resetConversationKeepingConfig(key);
           seenForwardIds.delete(key);
           // 按 key 记账的其余内存态（qq_wait_for_messages 的等待租约、发送失败标记、限流时间戳等）一并清掉：
           // 以前漏了等待租约，重置后新会话仍被旧租约挡住最长 15 分钟（「该会话已有一个等待中的 qq_wait_for_messages」）。
