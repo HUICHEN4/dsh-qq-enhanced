@@ -52,7 +52,14 @@ function skip(label, why) {
 }
 
 // ── 1. 仓库侧：preset persona schema ────────────────────────────────────────
-const persona = await import(pathToFileURL(path.join(DSH_MODULES, '@deepseek-ai/dsh-persona/lib/index.js')).href);
+// DSH 0.2.2 起自带包不再解包到 profile 的 node_modules，@deepseek-ai/* 全在
+// 安装目录的 resources/app.asar 里（`profiles/<p>/node_modules/@deepseek-ai/`
+// 只剩 cosmokit、schemastery）。所以 persona 必须走 asar 感知的 loader 用裸
+// 说明符导入；js-yaml 仍是 profile 的真实依赖，继续按 DSH_MODULES 拼路径。
+// 不注册也会跑：此时裸说明符解析不到会直接抛错，比悄悄跳过检查更诚实。
+const { register } = await import('node:module');
+register(new URL('./asar-module-loader.mjs', import.meta.url));
+const persona = await import('@deepseek-ai/dsh-persona');
 const YAML = await import(pathToFileURL(path.join(DSH_MODULES, 'js-yaml/index.js')).href);
 const yaml = YAML.default ?? YAML;
 
