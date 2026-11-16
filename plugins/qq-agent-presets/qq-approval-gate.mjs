@@ -27,6 +27,7 @@ export const DENY_TOOLS = Object.freeze([
   'send_message', 'interrupt_agent', 'list_agents',
   'team_task_create', 'team_task_get', 'team_task_list', 'team_task_update',
   'user_terminal_list', 'user_terminal_read',
+  'office_convert', 'office_recalculate', 'office_render',
   'workflow', 'ralph', 'plugin_manager', 'load_workspace_dependencies',
   'schedule_create', 'schedule_update', 'schedule_delete', 'schedule_list',
   'cordis_inspect_list', 'cordis_inspect_query', 'read_mcp_resource', 'list_mcp_resources', 'list_mcp_resource_templates',

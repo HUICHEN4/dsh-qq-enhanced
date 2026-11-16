@@ -119,6 +119,7 @@ const GUARD_020_NAMES = [
   'list_mcp_resources', 'list_mcp_resource_templates', 'read_mcp_resource',
   'subagent_codex', 'subagent_claude_code',
   'team_task_create', 'team_task_get', 'team_task_list', 'team_task_update',
+  'office_convert', 'office_recalculate', 'office_render',
   'plugin_manager',
   'schedule_create', 'schedule_list', 'schedule_update', 'schedule_delete',
 ];

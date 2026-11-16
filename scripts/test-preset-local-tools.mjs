@@ -82,6 +82,8 @@ const LOCAL_EXECUTION_TOOLS = [
   'subagent_codex', 'subagent_claude_code',
   'team_task_create', 'team_task_get', 'team_task_list', 'team_task_update',
   'user_terminal_list', 'user_terminal_read',
+  // Office 文档处理（能落盘写文件并拉起外部进程）
+  'office_convert', 'office_recalculate', 'office_render',
   'plugin_manager',
   'schedule_create', 'schedule_list', 'schedule_edit', 'schedule_view',
   // 0.2.2 新增对账（从安装包 app.asar 抽出的真实工具名）

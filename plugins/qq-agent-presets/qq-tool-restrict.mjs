@@ -130,6 +130,8 @@ const LOCAL_EXECUTION_TOOLS = [
   'team_task_create', 'team_task_get', 'team_task_list', 'team_task_update',
   //   用户终端面板（能读用户自己终端里的输出 ⇒ 信息泄漏，2026-11-16 补）
   'user_terminal_list', 'user_terminal_read',
+  //   Office 文档处理（能落盘写文件，且会拉起外部进程；2026-11-16 补）
+  'office_convert', 'office_recalculate', 'office_render',
   //   ③ 插件装载权（= 任意代码执行）
   'plugin_manager',
   //   ④ 无人值守的自我调度
