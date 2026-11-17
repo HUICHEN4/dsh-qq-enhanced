@@ -10,13 +10,15 @@
 > and the documentation index is [docs/README.md](docs/README.md).
 > Issues and release downloads: [Issues](https://github.com/HUICHEN4/dsh-qq-enhanced/issues) · [Releases](https://github.com/HUICHEN4/dsh-qq-enhanced/releases).
 
+> ⚠️ **QQ backend handover**: upstream [NapCat](https://github.com/NapNeko/NapCatQQ) is no longer maintained (its repository README only says `## Ending`); [SnowCatQQ](https://github.com/DandanLLab/SnowCatQQ) carries the fork forward and supports current QQ builds (e.g. `9.9.37-54395`). The bridge still talks **OneBot v11**, so switching the backend needs no code change — see the "Install the QQ backend" step below.
+
 QQ friends/groups become DSH conversations, and agent replies (including questions and tool approvals) are sent back to QQ.
 
 ## What's in v1.x
 
 | Feature | In one line | Doc (Chinese) |
 | --- | --- | --- |
-| **Windows + macOS + Linux** | Windows / Linux use SnowLuma 2.x or NapCat as the QQ backend, macOS uses NapCat; all three have a no-window way to start | [DSH_DEPLOYMENT.md](docs/DSH_DEPLOYMENT.md) |
+| **Windows + macOS + Linux** | Windows / macOS / Linux use SnowCat or NapCat as the QQ backend (upstream NapCat is discontinued; SnowCat is the community fork), or the legacy SnowLuma; all three have a no-window way to start | [DSH_DEPLOYMENT.md](docs/DSH_DEPLOYMENT.md) |
 | **Interface platform** | `interface-platform/` (in this repo): a unified access layer between the bridge and QQ backends. Discovers accounts from the backend's folder, can serve SnowLuma and NapCat at the same time, and leaves room for WeChat / Discord / KOOK connectors later | [interface-platform/README.md](interface-platform/README.md) |
 | **Control center** | One local web page for the bridge, the interface platform and the QQ backends: start/stop buttons (QQ backends are only ever started by you), version and update checks, the NapCat login QR code shown right on the page, an overall status bar | [CONTROL_CENTER.md](docs/guides/CONTROL_CENTER.md) |
 | Cross-group identity | People are identified by QQ number only — same person, different group nicknames, still one person; same nickname, different numbers, never merged | [CONTINUITY.md](docs/guides/CONTINUITY.md) |
@@ -41,9 +43,9 @@ QQ friends/groups become DSH conversations, and agent replies (including questio
 ## Deployment (no-window launchers)
 
 You need: Node.js ≥ 22.13; the DSH desktop app or CLI (0.2.0-rc.2 / 0.2.1) with a model account configured inside DSH; and a QQ backend that **you** install and log in to —
-**Windows**: SnowLuma (full build) or NapCat.Shell; **macOS**: QQ for Mac + the [NapCat Mac installer](https://github.com/NapNeko/NapCat-Mac-Installer/releases);
-**Linux** (x64 / arm64): SnowLuma 2.x full build (`…-linux-x64.tar.gz` / `…-linux-arm64.tar.gz`, needs the Linux QQ client on the machine) or NapCat;
-NapCat needs a WebSocket server enabled in its WebUI at `127.0.0.1:3001`. This project never downloads or installs a QQ backend.
+**Windows**: [SnowCatQQ](https://github.com/DandanLLab/SnowCatQQ) portable build (recommended; upstream NapCat is discontinued) or NapCat.Shell; **macOS**: QQ for Mac + the [NapCat Mac installer](https://github.com/NapNeko/NapCat-Mac-Installer/releases);
+**Linux** (x64 / arm64): NapCat (SnowLuma 2.x is legacy and discontinued);
+the backend (SnowCat and NapCat alike) needs a WebSocket server enabled in its WebUI at `127.0.0.1:3001`; both default to `6099`. This project never downloads or installs a QQ backend.
 
 **One-time install** (in a terminal, in the project folder):
 
@@ -66,6 +68,7 @@ Optional: `npm run test:audit` (offline self-check), `npm run admin:totp-setup` 
    on a server, forward the port first with `ssh -L 3099:127.0.0.1:3099 <server>`.
 2. **接口平台 (Interface platform) → 概览 (Overview)**: click "开启" (turn on) on a backend card:
    - Windows / Linux · SnowLuma: first pick the SnowLuma folder under "接入实例 → 本机 SnowLuma 程序" with "浏览…", then "开启 SnowLuma"; scan the QR code in SnowLuma's WebUI the first time;
+   - SnowCatQQ: same "开启 NapCat" button — point "管理 NapCat 程序 → NapCat 设置" at this project's `state/start-snowcat.bat`, which wraps `snowcat-run.ps1` and your portable shell;
    - NapCat: "开启 NapCat" (on Windows / Linux, pick the launch file first in "管理 NapCat 程序 → NapCat 设置"; on Linux also pick the NapCat folder); when a scan is needed, the QR code appears right on the card.
 3. **接口平台 → 设置 (Settings)**: click "接入桥接" (link bridge).
 4. **桥接 (Bridge)** tab: click "启动桥接" (start bridge). Done when the status bar is all green (interface platform "1 账号就绪 · 桥接已接入", QQ "在线 <bot>", DSH "已就绪").
@@ -80,7 +83,7 @@ The full guide for a DSH agent (checks, expected output, common errors, update /
 
 ```
 QQ client (bot account)
-   ⇅  SnowLuma (Windows / Linux) or NapCat (macOS / Windows / Linux) — OneBot v11 WebSocket (default 3001)
+   ⇅  SnowLuma (Windows / Linux) or NapCat / SnowCat (macOS / Windows / Linux) — OneBot v11 WebSocket (default 3001)
 Interface platform (127.0.0.1:3120; OneBot-compatible entry /onebot/v11/ws)
    ⇅
 qq-bridge (bridge console 127.0.0.1:3100)  ──►  DSH Web API (desktop app or `dsh web`)
@@ -90,7 +93,7 @@ qq-bridge (bridge console 127.0.0.1:3100)  ──►  DSH Web API (desktop app o
 Control center 127.0.0.1:3099 manages the bridge, the interface platform and the local QQ backend programs.
 ```
 
-- **QQ side**: `@snowluma/sdk` provides the OneBot v11 WebSocket client; through the interface platform the bridge works the same with SnowLuma or NapCat.
+- **QQ side**: `@snowluma/sdk` provides the OneBot v11 WebSocket client; through the interface platform the bridge works the same with SnowLuma, NapCat or SnowCat.
 - **DSH side**: session Cookie minted offline from the persistent local signing key, `/api/<namespace>/<method>` slash RPC, and `/api/remote.mux` + `session/follow`
   event stream; verified on DSH 0.2.0-rc.2 and 0.2.1. The per-session model comes from `config.json`'s `dsh.model` (default `deepseek-flash`).
 - **Agent tools**: three bundled MCP servers expose a restricted QQ toolset (`qq_status`, `qq_get_group_history`, `qq_send_group_message`, `qq_reply`, …),
@@ -143,5 +146,5 @@ Test list and conventions: [docs/guides/TESTING.md](docs/guides/TESTING.md). `np
 
 ## Compliance
 
-SnowLuma and NapCat are independent third-party projects, not affiliated with Tencent/QQ, and are not distributed with this project. This project is for learning and
+SnowLuma, NapCat and SnowCatQQ are independent third-party projects, not affiliated with Tencent/QQ, and are not distributed with this project. This project is for learning and
 technical research only; please follow the relevant terms and the QQ User Agreement.

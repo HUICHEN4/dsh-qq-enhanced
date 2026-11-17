@@ -8,6 +8,8 @@
 
 **English**: [README.en.md](README.en.md) | **中文**: [README.md](README.md)
 
+> ⚠️ **QQ 后端换代**：上游 [NapCat](https://github.com/NapNeko/NapCatQQ) 已停止更新（仓库只剩 `## Ending`），社区由 [SnowCatQQ](https://github.com/DandanLLab/SnowCatQQ) 接力维护 NapCat 内核，并适配新版 QQ（如 `9.9.37-54395`）。桥接仍按 **OneBot v11** 与后端通信，换后端不用改代码；装法见下文「装 QQ 后端」节。
+>
 > 🗂️ 文档索引见 **[docs/README.md](docs/README.md)**；仓库目录/脚本命名约定见 **[docs/FOLDER_MAP.md](docs/FOLDER_MAP.md)**。
 >
 > 🔒 QQ 会话的权限边界与安全承诺见 **[RULES.md](RULES.md)**。
@@ -29,7 +31,7 @@
 
 > 克隆 <https://github.com/HUICHEN4/dsh-qq-enhanced> 到本地，按 README 的「安装」把依赖装好、复制 config.example.json 为 config.json 并引导我填群号和 QQ 账号，然后启动控制中心。
 
-DSH 会自己拉仓库、装依赖、检查 Node / NapCat，缺什么直接问你要。装完在控制台扫码登录 QQ 小号即可。
+DSH 会自己拉仓库、装依赖、检查 Node / QQ 后端，缺什么直接问你要。装完在控制台扫码登录 QQ 小号即可。
 
 手装的话看 [docs/DSH_DEPLOYMENT.md](docs/DSH_DEPLOYMENT.md)；踩坑先翻 [docs/guides/TROUBLESHOOTING.md](docs/guides/TROUBLESHOOTING.md)（没有就先搜 Issues）。
 
@@ -47,7 +49,7 @@ DSH 会自己拉仓库、装依赖、检查 Node / NapCat，缺什么直接问�
 1. 先读仓库里的 README、CHANGELOG 和 docs/guides/TROUBLESHOOTING.md，判断这是安装/配置问题，还是代码 bug。
 2. 如果是配置问题：直接告诉我改哪个字段、改成什么，改完帮我验证，别让我自己去猜。
 3. 如果需要更多信息，一次只问我一个问题（卡在哪一步、刚才做了什么、屏幕上写了什么）。
-4. 如果是真 bug：收集版本号、系统、Node 版本、QQ 端（NapCat / SnowLuma）版本和最近的错误日志，写成
+4. 如果是真 bug：收集版本号、系统、Node 版本、QQ 端（SnowCat / NapCat / SnowLuma）版本和最近的错误日志，写成
    标题 / 环境 / 复现步骤 / 期望结果 / 实际结果 / 相关日志 / 我已经试过什么。
 5. 提交前脱敏：QQ 号、群号、群友昵称、token、聊天正文都不要写进去，用 10****92 这种掩码代替。
 6. 最后教我怎么提交：有 GitHub 账号就打开
@@ -71,7 +73,7 @@ DSH 会自己拉仓库、装依赖、检查 Node / NapCat，缺什么直接问�
 
 | 新功能 | 一句话 | 文档 |
 | --- | --- | --- |
-| **Windows + macOS + Linux** | 三个系统都用 NapCat 登录（SnowLuma 已停更，仅保兼容）；都有无窗口启动方式 | [DSH_DEPLOYMENT.md](docs/DSH_DEPLOYMENT.md) |
+| **Windows + macOS + Linux** | 三个系统都用 SnowCat / NapCat 登录（NapCat 上游已停更，SnowCat 接力；SnowLuma 已停更，仅保兼容）；都有无窗口启动方式 | [DSH_DEPLOYMENT.md](docs/DSH_DEPLOYMENT.md) |
 | **接口平台** | 仓库里的 `interface-platform/`：桥接和 QQ 后端之间的统一接入层，按后端目录自动发现账号，可同时接 SnowLuma 与 NapCat；为以后接微信 / Discord / KOOK 留好接口 | [interface-platform/README.md](interface-platform/README.md) |
 | **控制中心** | 一个本地网页管理桥接、接口平台和 QQ 后端：按钮启停（QQ 后端只由你点击启动）、版本与更新检查、NapCat 扫码二维码直接显示、整体状态栏 | [CONTROL_CENTER.md](docs/guides/CONTROL_CENTER.md) |
 | 跨群认人 | 只认 QQ 号：同一个人在不同群换了群名片也能认出来；同名不同号绝不合并 | [CONTINUITY.md](docs/guides/CONTINUITY.md) |
@@ -102,9 +104,9 @@ DSH 会自己拉仓库、装依赖、检查 Node / NapCat，缺什么直接问�
 ### 部署（无窗口版）
 
 需要：Node.js ≥ 22.13、DSH 桌面版或命令行版（0.2.0-rc.2 / 0.2.1，先在 DSH 里配好模型账号）、你自己安装并能登录的 QQ 后端
-（**Windows**：NapCat.Shell；SnowLuma 已停更，老用户可继续用但不再推荐；**macOS**：Mac 版 QQ + [NapCat Mac 安装器](https://github.com/NapNeko/NapCat-Mac-Installer/releases)；
+（**Windows**：[SnowCatQQ](https://github.com/DandanLLab/SnowCatQQ) 便携版（推荐；上游 [NapCat](https://github.com/NapNeko/NapCatQQ) 已停更，老版本仍可用；SnowLuma 已停更，仅保兼容）；**macOS**：Mac 版 QQ + [NapCat Mac 安装器](https://github.com/NapNeko/NapCat-Mac-Installer/releases)；
 **Linux**（x64 / arm64）：NapCat（SnowLuma 已停更）；
-NapCat 要在它的 WebUI 里开启 WebSocket 服务端 `127.0.0.1:3001`）。本项目不下载、不安装 QQ 后端。
+后端要在它的 WebUI 里开启 WebSocket 服务端 `127.0.0.1:3001`，SnowCat 与 NapCat 的 WebUI 默认都在 `6099`）。本项目不下载、不安装 QQ 后端。
 
 **第一次安装**（在项目目录的终端里，只做一次）：
 
@@ -139,7 +141,7 @@ NapCat 要在它的 WebUI 里开启 WebSocket 服务端 `127.0.0.1:3001`）。�
 
 > ⚠️ 与上游的行为差异：控制台/DSH 设置/QQ 的模式变更都会通知 owner；未经管理通道授权的 closed-agent 不能建会话
 >（从上游升级时若停在 closed-agent，会回落到 reserved2 并告警）；审批改为编号制。详见 CHANGELOG「变更」。
-> 下文「完整启动流程（从零开始）」按「桥接直连 NapCat」写（SnowLuma 已停更，老用户仍可照旧，见 [DSH_DEPLOYMENT.md](docs/DSH_DEPLOYMENT.md) 第 4 节）；日常用上面的控制中心 + 接口平台更省事。
+> 下文「完整启动流程（从零开始）」按「桥接直连 SnowCat / NapCat」写（SnowLuma 已停更，老用户仍可照旧，见 [DSH_DEPLOYMENT.md](docs/DSH_DEPLOYMENT.md) 第 4 节）；日常用上面的控制中心 + 接口平台更省事。
 
 ---
 
@@ -156,7 +158,7 @@ NapCat 要在它的 WebUI 里开启 WebSocket 服务端 `127.0.0.1:3001`）。�
 > 本仓库默认分支 `main` **就是**最新版本，`git clone https://github.com/HUICHEN4/dsh-qq-enhanced.git` 直接拿到，无需切换分支；也可以下载 [Release ZIP](https://github.com/HUICHEN4/dsh-qq-enhanced/releases)。
 
 ```
-QQ 消息 ──► SnowLuma / NapCat（OneBot v11 WS，可经接口平台）──► 本桥接进程 ──► DSH Web API（命令行版 127.0.0.1:3080 / 桌面版自动识别）
+QQ 消息 ──► SnowLuma / NapCat / SnowCat（OneBot v11 WS，可经接口平台）──► 本桥接进程 ──► DSH Web API（命令行版 127.0.0.1:3080 / 桌面版自动识别）
                                                 ▲                      │
                                                 └── agent 回复/提问/审批 ┘
 ```
@@ -216,7 +218,7 @@ QQ 消息 ──► SnowLuma / NapCat（OneBot v11 WS，可经接口平台）─
 ## 前置条件
 
 1. 运行中的 DeepSeek Harness（0.2.0-rc.2 或 0.2.1；命令行版默认 `http://127.0.0.1:3080`，桌面版端口自动识别）
-2. 运行中的 SnowLuma（或 NapCat，推荐经控制中心 + 接口平台接入），且配置好 OneBot WebSocket 与 HTTP API（默认 `ws://127.0.0.1:3001` / `http://127.0.0.1:3000`，`accessToken` 视配置填写）
+2. 运行中的 QQ 后端（SnowCat / NapCat / SnowLuma，推荐经控制中心 + 接口平台接入），且配置好 OneBot WebSocket 与 HTTP API（默认 `ws://127.0.0.1:3001` / `http://127.0.0.1:3000`，`accessToken` 视配置填写）
 3. Node.js ≥ 22.13
 
 ## 安装与配置
@@ -290,22 +292,23 @@ node scripts/setup-dsh.mjs
    装完**必须重启 DSH**——preset 与 MCP 只在 DSH 启动时加载。
    跳过这步桥接不会崩，但群聊会话拿不到 `qq-chat` preset，桥接会**拒绝建会话**（有意的安全设计：绝不回退到带 bash/文件工具的默认 preset），表现同样是 QQ 上没反应。
 
-4. **装 QQ 后端：NapCat**
-   - Windows：下载 `NapCat.Shell.Windows.OneKey.zip`（<https://github.com/NapNeko/NapCatQQ/releases>），解压到**项目目录之外**（例如 `C:\NapCat`），按压缩包内的说明启动并扫码登录机器人 QQ（OneKey 版通常是双击 `launcher.bat`，以包内 README 为准）
+4. **装 QQ 后端：SnowCat（推荐）/ NapCat**
+   - **SnowCatQQ**（推荐；上游 NapCat 的社区接力，适配新版 QQ，比如 `9.9.37-54395`）：从 <https://github.com/DandanLLab/SnowCatQQ> 取源码，用仓库里的 `release-tools/snowcat-portable-maker.ps1 -FromInstalled -SourceQQ <已安装的 QQ.exe> -OutDir <输出目录>` 做成便携壳（自带 QQ，1.7 GB 左右）；控制中心「管理 NapCat 程序 → NapCat 设置」选项目里的 `state/start-snowcat.bat`，改好里面的 `-Shell`（便携目录）与 `-QqUin`（机器人 QQ）即可一键起停
+   - Windows · NapCat（上游已停更，老版本仍可用）：下载 `NapCat.Shell.Windows.OneKey.zip`（<https://github.com/NapNeko/NapCatQQ/releases>），解压到**项目目录之外**（例如 `C:\NapCat`），按压缩包内的说明启动并扫码登录机器人 QQ（OneKey 版通常是双击 `launcher.bat`，以包内 README 为准）
    - macOS：Mac 版 QQ + [NapCat Mac 安装器](https://github.com/NapNeko/NapCat-Mac-Installer/releases)
    - Linux：按 NapCat 官方文档安装（安装脚本或 Docker），无图形界面时用 `xvfb-run … qq --no-sandbox` 启动
    - 已经在用 SnowLuma（已停更，仅保兼容）的**不用换**，直接跳到第 5 步，把下面配置里的地址填成 SnowLuma 的即可
 
-5. **在 NapCat 的 WebUI 里开 OneBot，并填桥接配置**
-   - 打开 `http://127.0.0.1:6099/webui`，登录令牌打印在 NapCat 日志里
+5. **在后端的 WebUI 里开 OneBot，并填桥接配置**
+   - 打开 `http://127.0.0.1:6099/webui`，登录令牌打印在 SnowCat / NapCat 的日志里
    - 网络配置 → 新建 **WebSocket 服务端**：主机 `127.0.0.1`、端口 `3001`；如果要用 MCP 工具（HTTP GET/POST 工具），再建一个 **HTTP 服务端**：端口 `3000`（令牌可留空，或设了之后填到配置里）
-   - 回到 `config.json` 填好 **`snowluma` 段**（键名是历史遗留，内容填 **NapCat** 的端点），并把 `allow.private` / `allow.groups` 换成**你自己的 QQ 号 / 群号**：
+   - 回到 `config.json` 填好 **`snowluma` 段**（键名是历史遗留，内容填**后端**的端点），并把 `allow.private` / `allow.groups` 换成**你自己的 QQ 号 / 群号**：
 
      ```json
      "snowluma": {
        "wsUrl": "ws://127.0.0.1:3001",
        "httpUrl": "http://127.0.0.1:3000",
-       "accessToken": "你在 NapCat 里配的 token（没配置就留空）"
+       "accessToken": "你在后端里配的 token（没配置就留空）"
      }
      ```
 
@@ -315,7 +318,7 @@ node scripts/setup-dsh.mjs
    ```bash
    npm start          # 前台运行（崩溃不自动重启）
    ```
-   看到 `QQ 后端（NapCat 4.x）已连接` 即成功；然后 QQ 上给机器人账号发条消息测试。
+   看到 `QQ 后端（SnowCat.Onebot 4.18.42）已连接`（用 NapCat 时是 `QQ 后端（NapCat 4.x）已连接`）即成功；然后 QQ 上给机器人账号发条消息测试。
    Windows 想要「崩溃自动重启」请改用 `start.bat`（见下节）。
 
 ## 运行与运维
@@ -343,7 +346,7 @@ npm start          # 或双击 start.bat（守护模式：崩溃自动重启，�
 日志示例：
 
 ```
-12:00:01 [bridge] QQ 后端（NapCat 4.x）已连接：ws://127.0.0.1:3001
+12:00:01 [bridge] QQ 后端（SnowCat.Onebot 4.18.42）已连接：ws://127.0.0.1:3001
 12:00:02 [bridge] 新会话 private:12345678 -> sess_xxxx
 12:00:02 [bridge] 已投递 private:12345678: 你好
 12:00:20 [bridge] agent 回复 (private:12345678) 42 字
@@ -491,7 +494,7 @@ SnowLuma 同一个账号的 **HTTP token（默认 3000 端口）与 WebSocket to
   DeepSeek Harness 的增强版（`qq-bridge-enhanced v1.1.2`）。接口平台、控制中心、跨群认人、分层人物记忆、
   DSH 部署文档这些，都是他先做出来的；v1.1.3 起才在本仓库继续改。
 - **DeepSeek Harness** —— 桥接的宿主：消息变成 DSH 会话、工具调用、上下文压缩、会话日志，都是 DSH 提供的。
-- **NapCat**（现在推荐的 QQ 协议端）与 **SnowLuma**（早期部署） —— 桥接只按 OneBot 11 协议跟它们讲话，不打包、不改它们。
+- **NapCat**（推荐过的 QQ 协议端，上游已停更）、**SnowCatQQ**（社区接力，继续适配新版 QQ）与 **SnowLuma**（早期部署） —— 桥接只按 OneBot 11 协议跟它们讲话，不打包、不改它们。
 - **群里的各位** —— 行为上的问题几乎都是被骂出来的：唤醒太黏、接话像配旁白、图片烧 token，
   这些都是真实反馈，不是想象出来的需求。
 - **Alice** —— 需要说清楚：**她是工具，不是作者。** 她是跑在作者电脑上的 DSH agent（DeepSeek Harness），
