@@ -2897,7 +2897,7 @@ button:active:not(:disabled) {
         <div class="meta" style="margin:4px 0" id="snowlumaWarnHint"></div>
         <div class="meta" id="snowlumaWarnDiag">最近一个上游事件包：<b id="snowlumaWarnPkt">unknown</b>；后端自评接收链路 good=<b id="snowlumaWarnGood">unknown</b>。</div>
         <div class="meta" style="margin:4px 0">这是 <b>QQ 后端那边</b>的问题：它没能从 QQ 客户端取到数据，所以桥接的 WebSocket 连上了却始终没有内容可收。桥接没有原生 / 注入组件，也不改后端，一条上游事件包都不会替你凭空造出来。</div>
-        <div class="meta">排查：老部署（SnowLuma）看它的 <code>logs/snowluma-*.log</code> 搜 <code>[Hook]</code>；NapCat 看自己的终端输出。看有没有 <code>receive path stale</code> / <code>process enumeration timed out</code> 这类行；顺带考虑<b>升级 SnowLuma</b>（新版运行时对 hook 的兜底更好）。桥接这边不用重启。</div>
+        <div class="meta">排查：老部署（SnowLuma）看它的 <code>logs/snowluma-*.log</code> 搜 <code>[Hook]</code>；SnowCat 看 state/logs/napcat-*.log（日志名沿用历史）。看有没有 <code>receive path stale</code> / <code>process enumeration timed out</code> 这类行；顺带考虑<b>升级 SnowLuma</b>（新版运行时对 hook 的兜底更好）。桥接这边不用重启。</div>
       </div>
     </section>
 <section id="section-token" data-page="access" class="card">
@@ -3151,7 +3151,7 @@ function renderSnowlumaHealth(sl) {
   } else if (!connected) {
     strong.textContent = '未连接';
     strong.className = 'err';
-    hint.textContent = '连不上 QQ 网关，请先启动 QQ 后端（NapCat）';
+    hint.textContent = '连不上 QQ 网关，请先启动 QQ 后端（SnowCat）';
   } else {
     strong.textContent = '正常 · 接收中';
     strong.className = 'ok';

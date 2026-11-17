@@ -190,7 +190,7 @@ export function createPlatform({ dataDir = defaultDataDir(), config = null, admi
       compat: { onebot: { enabled: cfg.compat.onebot.enabled, account: cfg.compat.onebot.account, resolved: resolveCompatAccount(null) } },
       support: {
         platforms: ['qq'],
-        note: 'M1：QQ 经 SnowLuma（Windows / Linux）或 NapCat（macOS / Windows / Linux）外部运行接入，可同时启用。自研 Mac 原生 QQ（M3）、其他平台尚未提供。',
+        note: 'M1：QQ 经 SnowCat / NapCat（Windows / macOS / Linux）或 SnowLuma（Windows / Linux）外部运行接入，可同时启用。自研 Mac 原生 QQ（M3）、其他平台尚未提供。',
       },
     };
   }

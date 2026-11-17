@@ -1,4 +1,4 @@
-// QQ 连接器：NapCat（OneBot v11 正向 WebSocket）。只连接用户自己安装并运行的 NapCat，不安装、不启停、不修改它。
+// QQ 连接器：NapCat（OneBot v11 正向 WebSocket）。只连接用户自己安装并运行的 SnowCat（兼容 NapCat），不安装、不启停、不修改它。
 // NapCat 官方支持 macOS（12+，Intel / Apple Silicon）、Windows 与 Linux，是 Mac 上接入 QQ 的候选后端。
 // 账号发现：<NapCat 配置目录>/onebot11_<QQ>.json 的 network.websocketServers（见 discovery.mjs）。
 //
@@ -13,11 +13,11 @@ import { discoverNapCatEndpoints } from './discovery.mjs';
 export const PROVIDER = {
   id: 'napcat',
   platform: 'qq',
-  name: 'NapCat（OneBot v11）',
+  name: 'SnowCat（OneBot v11，兼容 NapCat）',
   available: true,
   management: ['external', 'remote'],
   os: ['darwin', 'win32', 'linux'],
-  note: '连接用户自己安装并运行的 NapCat（macOS / Windows / Linux）。需要在 NapCat 里开启一个 WebSocket 服务端（websocketServers）。接口平台不安装、不启停 NapCat；其许可条款由使用者自行遵守。',
+  note: '连接用户自己安装并运行的 SnowCat（兼容 NapCat）（macOS / Windows / Linux）。需要在 NapCat 里开启一个 WebSocket 服务端（websocketServers）。接口平台不安装、不启停 NapCat；其许可条款由使用者自行遵守。',
 };
 
 export const capabilities = () => oneBotCapabilities({

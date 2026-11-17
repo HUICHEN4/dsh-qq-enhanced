@@ -381,12 +381,12 @@ export async function startControlCenter({ open = true, port: portOverride = nul
       else if (await portOpen(snowInfo.webui.port)) steps.push('SnowLuma 已在别处运行，直接连接');
       else { const r = snowluma.start(); steps.push(r.ok ? '已启动 SnowLuma' : `SnowLuma 启动失败：${r.error}`); }
     } else if (provider === 'napcat') {
-      if (napcat.running) steps.push('NapCat 已在运行');
-      else if (await portOpen(napcatWebuiPort())) steps.push('NapCat 已在别处运行（不是由控制中心启动的），直接连接');
+      if (napcat.running) steps.push('SnowCat 已在运行');
+      else if (await portOpen(napcatWebuiPort())) steps.push('SnowCat 已在别处运行（不是由控制中心启动的），直接连接');
       else {
         const info = inspectNapCat(settings);
-        if (!info.ok) steps.push(`没有启动 NapCat：${info.error}`);
-        else { const r = napcat.start(); steps.push(r.ok ? '已启动 NapCat（首次需扫码登录：二维码在 NapCat 日志里）' : `NapCat 启动失败：${r.error}`); }
+        if (!info.ok) steps.push(`没有启动 SnowCat：${info.error}`);
+        else { const r = napcat.start(); steps.push(r.ok ? '已启动 SnowCat（首次需扫码登录：二维码在 SnowCat 日志里）' : `SnowCat 启动失败：${r.error}`); }
       }
     } else {
       throw Object.assign(new Error(`未知后端：${provider}`), { status: 400 });
@@ -419,7 +419,7 @@ export async function startControlCenter({ open = true, port: portOverride = nul
     }
     const proc = provider === 'snowluma' ? snowluma : provider === 'napcat' ? napcat : null;
     if (!proc) throw Object.assign(new Error(`未知后端：${provider}`), { status: 400 });
-    if (proc.running) { await proc.stop(); steps.push(`已停止由控制中心启动的 ${provider === 'snowluma' ? 'SnowLuma' : 'NapCat'}`); }
+    if (proc.running) { await proc.stop(); steps.push(`已停止由控制中心启动的 ${provider === 'snowluma' ? 'SnowLuma' : 'SnowCat'}`); }
     else steps.push('程序不是由控制中心启动的，保持原样');
     return steps;
   }
@@ -488,7 +488,7 @@ export async function startControlCenter({ open = true, port: portOverride = nul
     '  bridge start|stop|restart  启停桥接',
     '  platform start|stop|restart  启停接口平台',
     '  snowluma start|stop        启停 SnowLuma（已停更，仅老部署）',
-    '  napcat start|stop          启停 NapCat',
+    '  napcat start|stop          启停 SnowCat',
     '  clear                      清空本页面的显示（不删除日志文件）',
   ].join('\n');
 
@@ -611,7 +611,7 @@ export async function startControlCenter({ open = true, port: portOverride = nul
         const snap = napcat.snapshot();
         const q = napcatQrStatus(settings, { running: snap.running, startedAt: snap.startedAt, loggedIn: napcatLoggedIn((await platformState()).overview) });
         const buf = q.waiting ? readNapCatQr(q.file) : null;
-        if (!buf) return send(404, { ok: false, error: '现在没有需要扫的二维码（NapCat 没在等扫码登录）' });
+        if (!buf) return send(404, { ok: false, error: '现在没有需要扫的二维码（SnowCat 没在等扫码登录）' });
         res.writeHead(200, { 'content-type': 'image/png', 'content-length': buf.length, ...SEC });
         return res.end(buf);
       }
@@ -678,11 +678,11 @@ export async function startControlCenter({ open = true, port: portOverride = nul
       if (req.method === 'POST' && p === '/api/pick') {
         const mac = process.platform === 'darwin';
         const PURPOSES = {
-          'napcat-home': { kind: 'folder', title: '选择 NapCat 的目录（含 config/onebot11_<QQ号>.json）', initialDir: napcatDefaultHome(settings) },
+          'napcat-home': { kind: 'folder', title: '选择 SnowCat 的目录（含 config/onebot11_<QQ号>.json）', initialDir: napcatDefaultHome(settings) },
           'napcat-qqapp': { kind: 'app', title: '选择已切换为 NapCat 入口的 QQ.app', initialDir: '/Applications' },
           'napcat-command': process.platform === 'linux'
-            ? { kind: 'file', title: '选择 NapCat 启动文件（.sh 脚本或可执行文件）', initialDir: settings.napcatCommand ? path.dirname(settings.napcatCommand) : '', extensions: [] }
-            : { kind: 'file', title: '选择 NapCat 启动文件（NapCat.Shell 里的 .bat / .exe）', initialDir: settings.napcatCommand ? path.dirname(settings.napcatCommand) : '', extensions: ['bat', 'cmd', 'exe'] },
+            ? { kind: 'file', title: '选择后端启动文件（.sh 脚本或可执行文件）', initialDir: settings.napcatCommand ? path.dirname(settings.napcatCommand) : '', extensions: [] }
+            : { kind: 'file', title: '选择后端启动文件（如 state/start-snowcat.bat 或 .exe）', initialDir: settings.napcatCommand ? path.dirname(settings.napcatCommand) : '', extensions: ['bat', 'cmd', 'exe'] },
           'snowluma-dir': { kind: 'folder', title: '选择 SnowLuma 的解压目录（含 launcher.bat 的那一层）', initialDir: settings.snowlumaDir || ROOT },
         };
         const spec = PURPOSES[String(body.purpose ?? '')];
@@ -698,10 +698,10 @@ export async function startControlCenter({ open = true, port: portOverride = nul
         saveSettings(settings);
         const steps = [...v.notes];
         const after = napcatDefaultHome(settings);
-        if (after !== before) steps.push(await syncPlatformHomeDir(after, 'napcat') ? '已同步给接口平台的 NapCat 实例' : '接口平台没运行或还没有 NapCat 实例：之后开启 NapCat 时会按新目录建实例');
-        if (napcat.running && ('qqApp' in body || 'command' in body || 'quickLogin' in body)) steps.push('NapCat 正在运行：启动方式的改动在下次启动时生效');
+        if (after !== before) steps.push(await syncPlatformHomeDir(after, 'napcat') ? '已同步给接口平台的 SnowCat 实例' : '接口平台没运行或还没有 SnowCat 实例：之后开启 SnowCat 时会按新目录建实例');
+        if (napcat.running && ('qqApp' in body || 'command' in body || 'quickLogin' in body)) steps.push('SnowCat 正在运行：启动方式的改动在下次启动时生效');
         napcatUpdate = null;
-        napcat.note(`NapCat 设置已保存${steps.length ? `：${steps.join('；')}` : ''}`);
+        napcat.note(`SnowCat 设置已保存${steps.length ? `：${steps.join('；')}` : ''}`);
         return send(200, { ok: true, steps, settings: { qqApp: settings.napcatQQApp || '', home: settings.napcatHome || '', command: settings.napcatCommand || '', quickLogin: settings.napcatQuickLogin || '' } });
       }
       if (req.method === 'POST' && p === '/api/napcat/check-update') {
@@ -755,7 +755,7 @@ export async function startControlCenter({ open = true, port: portOverride = nul
       }
       if (req.method === 'POST' && p === '/api/snowluma/stop') return send(200, await snowluma.stop());
       if (req.method === 'POST' && p === '/api/napcat/start') {
-        if (!napcat.running && await portOpen(napcatWebuiPort())) return send(409, { ok: false, error: `端口 ${napcatWebuiPort()} 已被占用：NapCat（QQ）可能已经在别处运行。请先完全退出那个 QQ，再从这里启动。` });
+        if (!napcat.running && await portOpen(napcatWebuiPort())) return send(409, { ok: false, error: `端口 ${napcatWebuiPort()} 已被占用：SnowCat（QQ）可能已经在别处运行。请先完全退出那个 QQ，再从这里启动。` });
         return send(200, napcat.start());
       }
       if (req.method === 'POST' && p === '/api/napcat/stop') return send(200, await napcat.stop());

@@ -162,7 +162,7 @@
   <span class="spacer"></span>
   <span class="badge" id="overallBadge" title="总体状态">总体 —</span>
   <button class="danger solid" id="panicBtn" title="立即回到安全模式（L0 群友模式），停止运维 Agent">紧急关闭</button>
-  <button class="ghost" id="exitBtn" title="先停止由控制中心启动的桥接、接口平台与 NapCat，再退出控制中心">退出控制中心</button>
+  <button class="ghost" id="exitBtn" title="先停止由控制中心启动的桥接、接口平台与 SnowCat，再退出控制中心">退出控制中心</button>
 </header>
 
 <!-- 顶部大标签：切换只改变显示，不启停、不重连任何模块 -->
@@ -267,7 +267,7 @@
             <label for="addMgmt">管理方式</label><select id="addMgmt"><option value="external">外部运行（只连接）</option><option value="remote">远程连接</option></select>
             <label for="addWs">WS 地址</label><input type="text" id="addWs" placeholder="ws://127.0.0.1:3001">
             <label for="addToken">令牌</label><input type="password" id="addToken" placeholder="WS accessToken（填了目录可留空）" autocomplete="off">
-            <label for="addHome">后端目录</label><input type="text" id="addHome" placeholder="可选：SnowLuma 目录或 NapCat 配置目录，按目录自动发现账号">
+            <label for="addHome">后端目录</label><input type="text" id="addHome" placeholder="可选：SnowLuma 目录或 SnowCat 配置目录，按目录自动发现账号">
           </div>
           <div class="row" style="justify-content:flex-end"><button class="ghost" id="addCancel">取消</button><button class="primary" id="addGo">创建</button></div>
         </div>
@@ -285,7 +285,7 @@
           <p class="note" id="idLocalNote" style="padding:10px 14px;margin:0" hidden>这是本机程序（不是平台里的实例）：这里只能启停和设置程序本身。接口平台没运行、或平台里还没有对应实例时显示；启动接口平台并在「概览」里开启后端后，会列出平台里的实例。</p>
           <div class="form platform-only">
             <label for="idWs">WS 地址</label><input type="text" id="idWs">
-            <label for="idHome">后端目录</label><input type="text" id="idHome" placeholder="SnowLuma 目录 / NapCat 配置目录：填了就按目录发现账号（推荐），留空则用 WS 地址 + 令牌">
+            <label for="idHome">后端目录</label><input type="text" id="idHome" placeholder="SnowLuma 目录 / SnowCat 配置目录：填了就按目录发现账号（推荐），留空则用 WS 地址 + 令牌">
             <label for="idToken">令牌</label><input type="password" id="idToken" autocomplete="off" placeholder="留空 = 不修改">
           </div>
           <div class="row platform-only" style="padding:0 14px 12px;justify-content:flex-end"><span class="note" id="idSaveNote"></span><button id="idSave">保存配置</button></div>
@@ -304,7 +304,7 @@
               <button class="danger" id="snowStop" disabled>停止 SnowLuma</button>
             </div>
             <div id="snowPick" class="empty-state">
-              <p class="note" style="margin-bottom:8px">SnowLuma 已停更，新装请用 <b>NapCat</b>（见 README 第 4 步）。这一块只为已在用 SnowLuma 的老部署保留，只有你亲手点击才会启停，桥接和 AI 都不会动它。</p>
+              <p class="note" style="margin-bottom:8px">SnowLuma 已停更，新装请用 <b>SnowCat</b>（见 README 第 4 步）。这一块只为已在用 SnowLuma 的老部署保留，只有你亲手点击才会启停，桥接和 AI 都不会动它。</p>
               <p>选择你自己下载并解压的 SnowLuma 目录（含 <code>launcher.bat</code>（Windows）或 <code>launcher.sh</code>（Linux）、<code>index.mjs</code> 的那一层）。SnowLuma 不会放进项目里，也不会被自动启动。选择后会同步给接口平台的 SnowLuma 实例。</p>
               <div class="row">
                 <input type="text" id="snowDirInput" placeholder="例如 D:\SnowLuma-v2.0.3-win-x64 或 /opt/SnowLuma-v2.0.3-linux-x64" aria-label="SnowLuma 目录">
@@ -361,44 +361,44 @@
             <div class="term" id="snowTerm" role="log" aria-live="polite" style="max-height:360px"></div>
           </div>
 
-          <!-- NapCat 程序：只有用户亲手点击才启停（不经接口平台、不经桥接/AI） -->
+          <!-- SnowCat 程序：只有用户亲手点击才启停（不经接口平台、不经桥接/AI） -->
           <div id="napSection" hidden>
             <div class="card-head" style="border-top:1px solid var(--line)">
               <span class="dot" id="napDot"></span>
-              <h3>NapCat 程序（由你亲手启停）</h3>
+              <h3>SnowCat 程序（由你亲手启停）</h3>
               <span class="badge" id="napState">—</span>
               <span class="grow"></span>
-              <button class="primary" id="napStart">启动 NapCat</button>
-              <button class="danger" id="napStop">停止 NapCat</button>
+              <button class="primary" id="napStart">启动 SnowCat</button>
+              <button class="danger" id="napStop">停止 SnowCat</button>
             </div>
             <p class="note" id="napNote" style="padding:8px 14px;margin:0"></p>
             <div class="qr-panel" id="napQrPanel" hidden>
-              <img id="napQrImg" alt="NapCat 登录二维码" width="220" height="220">
+              <img id="napQrImg" alt="SnowCat 登录二维码" width="220" height="220">
               <div>
                 <h3 style="margin:0 0 6px">用手机 QQ 扫码登录机器人账号</h3>
-                <p class="note" style="margin:0">二维码约 2 分钟过期，NapCat 会自动换新的，这里也会跟着刷新。登录成功后这块会自动消失。<br>
+                <p class="note" style="margin:0">二维码约 2 分钟过期，SnowCat 会自动换新的，这里也会跟着刷新。登录成功后这块会自动消失。<br>
                 <span id="napQrTime"></span></p>
               </div>
             </div>
             <dl class="info">
               <dt>版本</dt><dd id="napVer">—</dd>
               <dt id="napProgLabel">程序</dt><dd id="napProgText">—</dd>
-              <dt>NapCat 目录</dt><dd id="napHomeText">—</dd>
+              <dt>SnowCat 目录</dt><dd id="napHomeText">—</dd>
             </dl>
             <div class="actions">
               <button id="napCheck">检查更新</button>
               <button id="napOpenDownload">打开下载页 ↗</button>
-              <button class="ghost" id="napSetToggle">NapCat 设置</button>
+              <button class="ghost" id="napSetToggle">SnowCat 设置</button>
             </div>
             <div class="panel-sub" id="napUpdatePanel">
               <h3 id="napUpdTitle">更新</h3>
               <div id="napUpdSummary" class="note"></div>
               <details class="notes" id="napUpdNotesWrap" hidden><summary>更新说明</summary><pre id="napUpdNotes"></pre></details>
-              <p class="note">控制中心只提示新版本，不下载、不安装 NapCat。AI 的记忆和会话在桥接的 <code>state/</code> 与 DSH 里，更新 NapCat 不会影响它们。</p>
+              <p class="note">控制中心只提示新版本，不下载、不安装 SnowCat。AI 的记忆和会话在桥接的 <code>state/</code> 与 DSH 里，更新 SnowCat 不会影响它们。</p>
             </div>
             <div class="panel-sub" id="napSetPanel">
-              <h3>NapCat 设置</h3>
-              <p class="note">留空 = 用默认位置。改启动方式在下次启动 NapCat 时生效；改 NapCat 目录会同步给接口平台的 NapCat 实例。</p>
+              <h3>SnowCat 设置</h3>
+              <p class="note">留空 = 用默认位置。改启动方式在下次启动 SnowCat 时生效；改 SnowCat 目录会同步给接口平台的 SnowCat 实例。</p>
               <div class="row" id="napQQAppRow">
                 <label for="napQQAppInput" style="min-width:110px">QQ.app</label>
                 <input type="text" id="napQQAppInput" placeholder="/Applications/QQ.app" aria-label="QQ.app 位置">
@@ -406,17 +406,17 @@
               </div>
               <div class="row" id="napCmdRow">
                 <label for="napCmdInput" style="min-width:110px">启动文件</label>
-                <input type="text" id="napCmdInput" placeholder="NapCat.Shell 里的 .bat / .exe" aria-label="NapCat 启动文件">
+                <input type="text" id="napCmdInput" placeholder="后端启动文件（如 state/start-snowcat.bat 或 .exe）" aria-label="SnowCat 启动文件">
                 <button id="napCmdBrowse">浏览…</button>
               </div>
               <div class="row">
-                <label for="napHomeInput" style="min-width:110px">NapCat 目录</label>
-                <input type="text" id="napHomeInput" aria-label="NapCat 目录（含 config/onebot11_<QQ号>.json）">
+                <label for="napHomeInput" style="min-width:110px">SnowCat 目录</label>
+                <input type="text" id="napHomeInput" aria-label="SnowCat 目录（含 config/onebot11_<QQ号>.json）">
                 <button id="napHomeBrowse">浏览…</button>
               </div>
               <div class="row">
                 <label for="napQuickInput" style="min-width:110px">快速登录 QQ 号</label>
-                <input type="text" id="napQuickInput" inputmode="numeric" placeholder="可选：机器人 QQ 号，启动时加 -q（NapCat 已设自动登录时不用填）" aria-label="快速登录 QQ 号">
+                <input type="text" id="napQuickInput" inputmode="numeric" placeholder="可选：机器人 QQ 号，启动时加 -q（SnowCat 已设自动登录时不用填）" aria-label="快速登录 QQ 号">
               </div>
               <div class="row">
                 <span class="grow"></span>
@@ -426,7 +426,7 @@
               <p class="note" id="napSetMsg"></p>
             </div>
             <div class="toolbar">
-              <input type="search" id="napFilter" placeholder="过滤 NapCat 日志…" aria-label="过滤 NapCat 日志">
+              <input type="search" id="napFilter" placeholder="过滤 SnowCat 日志…" aria-label="过滤 SnowCat 日志">
               <label class="check"><input type="checkbox" id="napErrors"> 只看错误</label>
               <label class="check"><input type="checkbox" id="napPause"> 暂停滚动</label>
               <span class="grow"></span>
@@ -485,7 +485,7 @@
 <footer id="statusBar">
   <span class="chip"><span class="dot" id="sbBridgeDot"></span><b>桥接</b><span id="sbBridge">—</span></span>
   <span class="chip"><span class="dot" id="sbPlDot"></span><b>接口平台</b><span id="sbPl">—</span></span>
-  <span class="chip" title="经接口平台接入的 QQ 后端实例（NapCat）；桥接直连时显示直连的 NapCat"><span class="dot" id="sbBackDot"></span><b>接入后端</b><span id="sbBack">—</span></span>
+  <span class="chip" title="经接口平台接入的 QQ 后端实例（SnowCat）；桥接直连时显示直连的 SnowCat"><span class="dot" id="sbBackDot"></span><b>接入后端</b><span id="sbBack">—</span></span>
   <span class="chip"><span class="dot" id="sbQQDot"></span><b>QQ</b><span id="sbQQ">—</span></span>
   <span class="chip"><span class="dot" id="sbDshDot"></span><b>DSH</b><span id="sbDsh">—</span></span>
   <span class="chip"><b>模式</b><span id="sbMode">—</span></span>
@@ -630,7 +630,7 @@
       if (!view.length) frag.appendChild(el('span', { className: 'empty', textContent: q || errs || minLv || scope ? '（没有匹配的日志）' : '（暂无输出）' }));
       for (const l of view.slice(-2500)) {
         if (l.kind === 'img') {
-          // 页面自己插入的图片条目（目前只有 NapCat 登录二维码）：小图 + 一行说明；过期后变灰
+          // 页面自己插入的图片条目（目前只有 SnowCat 登录二维码）：小图 + 一行说明；过期后变灰
           const row = el('span', { className: `l img${l.expired ? ' expired' : ''}` });
           row.appendChild(el('span', { className: 't', textContent: new Date(l.time).toLocaleTimeString() }));
           row.appendChild(el('span', { className: 'tag', textContent: '[控制中心]' }));
@@ -785,16 +785,16 @@
     $('consoleManual').href = `http://127.0.0.1:${h.consolePort || 3100}/?manual=1`;
   }
 
-  // 平台没运行时，控制中心读不到平台的实例（它不读平台的文件），只列本机 NapCat 程序占位项，保证仍能亲手启停 NapCat
-  const LOCAL_NAP = { id: '本机 NapCat 程序', provider: 'napcat', providerName: 'NapCat（本机程序）', management: 'hosted', local: true, upstream: {}, links: [] };
+  // 平台没运行时，控制中心读不到平台的实例（它不读平台的文件），只列本机 SnowCat 程序占位项，保证仍能亲手启停 SnowCat
+  const LOCAL_NAP = { id: '本机 SnowCat 程序', provider: 'napcat', providerName: 'SnowCat（本机程序）', management: 'hosted', local: true, upstream: {}, links: [] };
   const SNOW_OS = ['win32', 'linux'];
-  // NapCat 程序区要始终找得到：平台没运行、或平台里还没有 NapCat 实例时，列一个「本机 NapCat 程序」占位项。
+  // SnowCat 程序区要始终找得到：平台没运行、或平台里还没有 SnowCat 实例时，列一个「本机 SnowCat 程序」占位项。
   function instancesOf(pl) {
     const list = [...(pl.overview?.instances ?? [])];
     if (!list.some((i) => i.provider === 'napcat')) list.push(LOCAL_NAP);
     return list;
   }
-  // 从任何地方跳到 NapCat 程序区（接口平台 → 接入实例 → NapCat 实例）
+  // 从任何地方跳到 SnowCat 程序区（接口平台 → 接入实例 → SnowCat 实例）
   function goToNapcat() {
     mainTabs.select('tab-platform');
     platformTabs.select('ptab-instances');
@@ -823,7 +823,7 @@
     $('tRecv').textContent = up ? fmtAgo(ov.lastReceiveAt) : '—';
     $('tSend').textContent = up ? fmtAgo(ov.lastSendAt) : '—';
     $('tLink').textContent = pl.link.viaPlatform ? '经接口平台' : '直连 QQ 后端（未接入）';
-    $('plSupport').textContent = ov?.support?.note ?? 'M1：QQ 经 NapCat 接入。自研 Mac 原生 QQ（M3）与其他平台尚未提供。';
+    $('plSupport').textContent = ov?.support?.note ?? 'M1：QQ 经 SnowCat 接入。自研 Mac 原生 QQ（M3）与其他平台尚未提供。';
 
     // 实例列表
     const insts = instancesOf(pl);
@@ -840,8 +840,8 @@
       return el('li', {}, btn);
     });
     list.replaceChildren(...items);
-    if (!insts.length) list.replaceChildren(el('li', { className: 'note', textContent: up ? '还没有实例' : (SNOW_OS.includes(S.os) ? '接口平台未运行' : '接口平台未运行。macOS 上 QQ 经 NapCat 接入：先自己安装并启动 NapCat（开启 WebSocket 服务端），再启动接口平台。') }));
-    $('instProvidersNote').textContent = '可用：NapCat（macOS / Windows / Linux）。尚未提供：macOS 原生 QQ 接入、Discord、KOOK、WeChat。';
+    if (!insts.length) list.replaceChildren(el('li', { className: 'note', textContent: up ? '还没有实例' : (SNOW_OS.includes(S.os) ? '接口平台未运行' : '接口平台未运行。macOS 上 QQ 经 SnowCat 接入：先自己安装并启动 SnowCat（开启 WebSocket 服务端），再启动接口平台。') }));
+    $('instProvidersNote').textContent = '可用：SnowCat（macOS / Windows / Linux）。尚未提供：macOS 原生 QQ 接入、Discord、KOOK、WeChat。';
     renderInstDetail(insts.find((i) => i.id === selectedInst), up);
     renderAccounts(ov, up);
     renderSettings(pl, ov);
@@ -884,7 +884,7 @@
 
   function renderAccounts(ov, up) {
     const accs = ov?.accounts ?? [];
-    $('acctEmpty').textContent = !up ? '接口平台未运行。' : accs.length ? '' : '还没有账号。NapCat 登录后，实例连上即会出现。';
+    $('acctEmpty').textContent = !up ? '接口平台未运行。' : accs.length ? '' : '还没有账号。SnowCat 登录后，实例连上即会出现。';
     const L = ['coreRunning', 'backendReachable', 'loggedIn', 'ioReady', 'bridgeEnabled'];
     const names = { coreRunning: '核心运行', backendReachable: '后端可连接', loggedIn: '账号已登录', ioReady: '收发就绪', bridgeEnabled: '桥接已启用' };
     $('acctRows').replaceChildren(...accs.map((a) => {
@@ -961,23 +961,23 @@
     $('napStop').disabled = !n.running;
     const mac = S.os === 'darwin';
     const ver = n.version?.runtime || n.version?.file;
-    $('napVer').textContent = !ver ? (n.running ? '启动中，登录后显示' : '启动并登录后显示（由 NapCat 自报）')
+    $('napVer').textContent = !ver ? (n.running ? '启动中，登录后显示' : '启动并登录后显示（由 SnowCat 自报）')
       : ver + (n.version?.runtime ? '' : '（来自安装文件）') + (n.update?.latest ? (n.update.updateAvailable ? `（有新版本 ${n.update.latest}）` : '（已是最新）') : '');
     $('napProgLabel').textContent = mac ? 'QQ 程序' : '启动文件';
-    $('napProgText').textContent = mac ? (n.settings?.qqApp || '/Applications/QQ.app（默认）') : (n.settings?.command || '未设置（点「NapCat 设置」选择）');
+    $('napProgText').textContent = mac ? (n.settings?.qqApp || '/Applications/QQ.app（默认）') : (n.settings?.command || '未设置（点「SnowCat 设置」选择）');
     $('napHomeText').textContent = n.home ? n.home + (n.settings?.home ? '' : '（默认）') : '未设置';
     $('napQQAppRow').hidden = !mac; $('napCmdRow').hidden = mac;
     renderNapQr(n.qr);
-    if (!$('napSetPanel').classList.contains('show')) $('napHomeInput').placeholder = n.home || 'NapCat 目录';
-    $('napCmdInput').placeholder = S.os === 'linux' ? 'NapCat 的 .sh 启动脚本或可执行文件' : 'NapCat.Shell 里的 .bat / .exe';
-    if (S.os === 'linux' && !n.home) $('napHomeText').textContent = '未设置（Linux 没有默认位置：在「NapCat 设置」里选 NapCat 目录，接口平台才能自动发现账号和令牌）';
-    $('napNote').textContent = !n.info.ok ? n.info.error : n.external ? 'NapCat（QQ）已在别处运行，控制中心不会接管它；要在这里启停，先完全退出那个 QQ。' : (n.info.quickLogin ? '已设置自动登录（NapCat 的 autoLoginAccount 或 napcatQuickLogin）：启动时用保存的登录态，不用扫码；登录态失效时仍会要求扫码，二维码在 NapCat 的 cache/qrcode.png。' : '首次启动或登录过期时需要扫码：二维码保存在 NapCat 的 cache/qrcode.png（网页日志里的字符二维码可能扫不出来）。要免扫码，在「NapCat 设置」里填快速登录 QQ 号，或在 NapCat 里开启自动登录。');
+    if (!$('napSetPanel').classList.contains('show')) $('napHomeInput').placeholder = n.home || 'SnowCat 目录';
+    $('napCmdInput').placeholder = S.os === 'linux' ? '后端的 .sh 启动脚本或可执行文件' : '后端启动文件（如 state/start-snowcat.bat 或 .exe）';
+    if (S.os === 'linux' && !n.home) $('napHomeText').textContent = '未设置（Linux 没有默认位置：在「SnowCat 设置」里选 SnowCat 目录，接口平台才能自动发现账号和令牌）';
+    $('napNote').textContent = !n.info.ok ? n.info.error : n.external ? 'SnowCat（QQ）已在别处运行，控制中心不会接管它；要在这里启停，先完全退出那个 QQ。' : (n.info.quickLogin ? '已设置自动登录（SnowCat 的 autoLoginAccount 或 napcatQuickLogin）：启动时用保存的登录态，不用扫码；登录态失效时仍会要求扫码，二维码在 SnowCat 的 cache/qrcode.png。' : '首次启动或登录过期时需要扫码：二维码保存在 SnowCat 的 cache/qrcode.png（网页日志里的字符二维码可能扫不出来）。要免扫码，在「SnowCat 设置」里填快速登录 QQ 号，或在 SnowCat 里开启自动登录。');
   }
 
   // 接入后端开启卡：每个可用的提供方一张，互相独立
-  // 只列 NapCat：桥接和接口平台都走 NapCat（SnowLuma 后端已不再使用）
+  // 只列 SnowCat：桥接和接口平台都走 SnowCat（SnowLuma 后端已不再使用）
   const BACKENDS = [
-    { id: 'napcat', name: 'NapCat', os: 'macOS / Windows / Linux' },
+    { id: 'napcat', name: 'SnowCat', os: 'macOS / Windows / Linux' },
   ];
   function renderBackends() {
     const pl = S.platform; const insts = pl.overview?.instances ?? []; const accs = pl.overview?.accounts ?? [];
@@ -1006,15 +1006,15 @@
       card.append(dl);
       const btn = el('button', { className: `bbtn ${on ? 'danger' : 'primary'}`, textContent: on ? `关闭 ${b.name}` : `开启 ${b.name}` });
       btn.onclick = async () => {
-        if (on && !await confirmBox(`关闭 ${b.name}`, `断开接口平台里 ${b.name} 的实例${S.napcat.running ? '，并停止由控制中心启动的 NapCat（机器人 QQ 会下线）' : ''}。`, '关闭')) return;
+        if (on && !await confirmBox(`关闭 ${b.name}`, `断开接口平台里 ${b.name} 的实例${S.napcat.running ? '，并停止由控制中心启动的 SnowCat（机器人 QQ 会下线）' : ''}。`, '关闭')) return;
         const r = await act(() => api(`/api/backends/${b.id}/${on ? 'off' : 'on'}`, {}));
         if (r?.steps) toast(r.steps.join('；'), 'ok');
       };
       const rowEl = el('div', { className: 'row' }, btn);
       {
-        // NapCat 等扫码时在卡片上直接提示；任何时候都能一键跳到 NapCat 程序区
-        if (S.napcat.qr?.waiting) card.append(el('div', { className: 'qr-alert', textContent: '📱 NapCat 正在等你扫码登录' }));
-        const go = el('button', { className: 'bbtn', textContent: S.napcat.qr?.waiting ? '查看登录二维码 →' : '管理 NapCat 程序 →' });
+        // SnowCat 等扫码时在卡片上直接提示；任何时候都能一键跳到 SnowCat 程序区
+        if (S.napcat.qr?.waiting) card.append(el('div', { className: 'qr-alert', textContent: '📱 SnowCat 正在等你扫码登录' }));
+        const go = el('button', { className: 'bbtn', textContent: S.napcat.qr?.waiting ? '查看登录二维码 →' : '管理 SnowCat 程序 →' });
         go.onclick = goToNapcat;
         rowEl.append(go);
       }
@@ -1031,7 +1031,7 @@
     $('sbBridge').textContent = bRun ? `运行 ${fmtDur(b.uptimeMs)}` : (h.bridgeExternal ? '外部运行' : '未运行');
     setDot($('sbPlDot'), pl.reachable ? ((pl.overview?.counts.accountsReady ?? 0) ? 'on' : 'warn') : 'off');
     $('sbPl').textContent = pl.reachable ? `${pl.overview?.counts.accountsReady ?? 0} 账号就绪${pl.link.viaPlatform ? ' · 桥接已接入' : ''}` : (pl.running ? '启动中' : '未运行');
-    // 接入后端：桥接走接口平台时，看平台里各实例的连接情况（与具体后端无关）；直连时看 NapCat 程序本身
+    // 接入后端：桥接走接口平台时，看平台里各实例的连接情况（与具体后端无关）；直连时看 SnowCat 程序本身
     if (pl.link.viaPlatform) {
       const inst = (pl.overview?.instances ?? []).filter((i) => i.enabled !== false);
       const name = (i) => String(i.providerName || i.provider || i.id).split('（')[0];
@@ -1044,7 +1044,7 @@
     } else {
       const n = S.napcat;
       setDot($('sbBackDot'), n.running ? (st?.snowluma?.connected ? 'on' : 'warn') : 'off');
-      $('sbBack').textContent = n.running ? (st?.snowluma?.connected ? '直连 NapCat · 已连接' : '直连 NapCat · 运行中（桥接未连上）') : '直连 NapCat · 未运行';
+      $('sbBack').textContent = n.running ? (st?.snowluma?.connected ? '直连 SnowCat · 已连接' : '直连 SnowCat · 运行中（桥接未连上）') : '直连 SnowCat · 未运行';
     }
     const sh = st?.snowluma;
     const qqOk = sh && sh.accountOnline !== false && sh.good !== false && sh.connected;
@@ -1092,7 +1092,7 @@
   $('exitBtn').onclick = async () => {
     const pl = S?.platform;
     const extra = pl?.external ? '\n外部运行的接口平台不受影响。' : '';
-    if (!await confirmBox('退出控制中心', `会先停止由控制中心启动的桥接、接口平台和 NapCat（机器人将离线），然后关闭控制中心。不是由控制中心启动的进程不会被停止。${extra}`, '全部退出')) return;
+    if (!await confirmBox('退出控制中心', `会先停止由控制中心启动的桥接、接口平台和 SnowCat（机器人将离线），然后关闭控制中心。不是由控制中心启动的进程不会被停止。${extra}`, '全部退出')) return;
     try { await api('/api/exit', {}); } catch {}
     document.body.innerHTML = '<div style="padding:40px;font-size:15px">控制中心已退出，可以关闭这个页面。</div>';
   };
@@ -1113,12 +1113,12 @@
   };
 
   // ── 接口平台按钮 ──
-  // NapCat 登录二维码：图片要带令牌请求，取回后转成 data: 地址显示（页面的 CSP 只允许 data: 图片）
+  // SnowCat 登录二维码：图片要带令牌请求，取回后转成 data: 地址显示（页面的 CSP 只允许 data: 图片）
   let napQrShown = null;
   async function renderNapQr(q) {
     $('napQrPanel').hidden = !q?.waiting;
     if (!q?.waiting) {
-      if (napQrShown !== null) napLog.expireImages(S?.napcat?.running ? '已登录或已失效' : 'NapCat 已停止');
+      if (napQrShown !== null) napLog.expireImages(S?.napcat?.running ? '已登录或已失效' : 'SnowCat 已停止');
       napQrShown = null;
       return;
     }
@@ -1139,10 +1139,10 @@
     } catch { napQrShown = null; }
   }
 
-  // NapCat：检查更新 / 下载页 / 设置
+  // SnowCat：检查更新 / 下载页 / 设置
   function showNapUpdate(u) {
     $('napUpdatePanel').classList.add('show');
-    $('napUpdTitle').textContent = !u ? '更新' : !u.current ? `最新版本 ${u.latest}（当前版本未知：启动并登录 NapCat 后再检查可比较）` : u.updateAvailable ? `有新版本：${u.current} → ${u.latest}` : `当前 ${u.current}，最新 ${u.latest}`;
+    $('napUpdTitle').textContent = !u ? '更新' : !u.current ? `最新版本 ${u.latest}（当前版本未知：启动并登录 SnowCat 后再检查可比较）` : u.updateAvailable ? `有新版本：${u.current} → ${u.latest}` : `当前 ${u.current}，最新 ${u.latest}`;
     $('napUpdSummary').textContent = u ? `${u.publishedAt ? `发布时间：${new Date(u.publishedAt).toLocaleString()}。` : ''}${u.suggestedAsset ? `建议下载：${u.suggestedAsset}。` : ''}${u.howTo || ''}` : '';
     $('napUpdNotesWrap').hidden = !u?.notes; $('napUpdNotes').textContent = u?.notes || '';
   }
@@ -1173,19 +1173,19 @@
     try {
       const r = await api('/api/napcat/settings', body);
       $('napSetMsg').textContent = r.steps?.length ? r.steps.join('；') : '';
-      toast('NapCat 设置已保存', 'ok');
+      toast('SnowCat 设置已保存', 'ok');
       if (!r.steps?.length) $('napSetPanel').classList.remove('show');
       refresh();
     } catch (e) { $('napSetMsg').textContent = e.message; toast(e.message, 'bad'); }
   };
-  $('napStart').onclick = () => act(() => api('/api/napcat/start', {}), 'NapCat 已启动。需要扫码时二维码在 NapCat 日志里');
-  $('napStop').onclick = async () => { if (await confirmBox('停止 NapCat', '停止后机器人 QQ 会立刻下线，收不到也发不出消息。', '停止 NapCat')) act(() => api('/api/napcat/stop', {}), 'NapCat 已停止'); };
+  $('napStart').onclick = () => act(() => api('/api/napcat/start', {}), 'SnowCat 已启动。需要扫码时二维码在 SnowCat 日志里');
+  $('napStop').onclick = async () => { if (await confirmBox('停止 SnowCat', '停止后机器人 QQ 会立刻下线，收不到也发不出消息。', '停止 SnowCat')) act(() => api('/api/napcat/stop', {}), 'SnowCat 已停止'); };
   $('plStart').onclick = () => act(() => api('/api/platform/start', {}), '接口平台已启动');
   $('plRestart').onclick = async () => { if (await confirmBox('重启接口平台', S?.platform?.link?.viaPlatform ? '桥接经接口平台收发，重启期间机器人收不到也发不出消息。' : '重启期间平台接口不可用（桥接当前直连 QQ 后端，不受影响）。', '重启')) act(() => api('/api/platform/restart', {}), '已重启'); };
-  $('plStop').onclick = async () => { if (await confirmBox('停止接口平台', `${S?.platform?.link?.viaPlatform ? '桥接经接口平台收发，停止后机器人收不到也发不出消息。' : '桥接当前直连 QQ 后端，不受影响。'}\n外部运行的 NapCat 不会被停止。`, '停止')) act(() => api('/api/platform/stop', {}), '接口平台已停止'); };
+  $('plStop').onclick = async () => { if (await confirmBox('停止接口平台', `${S?.platform?.link?.viaPlatform ? '桥接经接口平台收发，停止后机器人收不到也发不出消息。' : '桥接当前直连 QQ 后端，不受影响。'}\n外部运行的 SnowCat 不会被停止。`, '停止')) act(() => api('/api/platform/stop', {}), '接口平台已停止'); };
   $('plAuto').onchange = (e) => act(() => api('/api/platform/auto-restart', { enabled: e.target.checked }));
   $('idConnect').onclick = () => act(() => api(`/api/platform/instances/${selectedInst}/connect`, {}), '已连接');
-  $('idDisconnect').onclick = async () => { if (await confirmBox('断开实例', `只断开 ${selectedInst} 及其账号的通信连接，其他实例不受影响；不会停止 NapCat 进程。`, '断开')) act(() => api(`/api/platform/instances/${selectedInst}/disconnect`, {}), '已断开'); };
+  $('idDisconnect').onclick = async () => { if (await confirmBox('断开实例', `只断开 ${selectedInst} 及其账号的通信连接，其他实例不受影响；不会停止 SnowCat 进程。`, '断开')) act(() => api(`/api/platform/instances/${selectedInst}/disconnect`, {}), '已断开'); };
   $('idSave').onclick = async () => {
     const up = { wsUrl: $('idWs').value.trim(), homeDir: $('idHome').value.trim() };
     if ($('idToken').value) up.accessToken = $('idToken').value;

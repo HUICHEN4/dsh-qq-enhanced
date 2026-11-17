@@ -162,7 +162,7 @@ $script:steps = @(
       Start-Process -FilePath 'wscript.exe' -ArgumentList ('"' + $vbs + '"') -WorkingDirectory $Root -WindowStyle Hidden
       return 'run'
     }; check = { $null -ne (Get-State) }; timeout = 45 },
-  @{ name = 'NapCat'; start = {
+  @{ name = 'SnowCat'; start = {
       $st = Get-State
       if ($null -ne $st -and $st.napcat -and $st.napcat.running -eq $true) { return 'skip' }
       $null = Invoke-Cc 'POST' '/api/napcat/start' @{}
@@ -240,7 +240,7 @@ function Step-Tick {
     }
     if ((Get-Date) -gt $script:stepDeadline) {
       $msg = "$($st.name)：超过 $($st.timeout) 秒未就绪"
-      if ($st.name -eq 'NapCat') { $msg += '（可能要扫码，去控制台看二维码）' }
+      if ($st.name -eq 'SnowCat') { $msg += '（可能要扫码，去控制台看二维码）' }
       if ($st.name -eq 'QQ 在线') { $msg += '（控制台看是不是要扫码）' }
       if ($st.name -eq 'DSH 就绪') { $msg += '（桥接在跑，但 @ 了不会有 AI 回）' }
       Ui-Log $msg 'err'
@@ -255,7 +255,7 @@ function Stop-Everything {
   $btnStart.Enabled = $false
   $btnStop.Enabled = $false
   $script:startRunning = $false
-  Ui-Log '=== 正在停止：桥接 → NapCat → 控制中心 ===' 'warn'
+  Ui-Log '=== 正在停止：桥接 → SnowCat → 控制中心 ===' 'warn'
   foreach ($p in @('/api/bridge/stop', '/api/napcat/stop', '/api/platform/stop')) {
     try { $null = Invoke-Cc 'POST' $p @{}; Ui-Log ("$p 已发送") } catch { Ui-Log ("$p：" + $_.Exception.Message) 'warn' }
   }
@@ -363,7 +363,7 @@ function Update-Status {
   $st = Get-State
   if ($null -eq $st) { $script:statusLabel.Text = '控制中心：未运行'; return }
   $b = $st.health.bridgeApi
-  $nm = 'NapCat ' + $(if ($st.napcat.running) { '✓' } else { '✗' })
+  $nm = 'SnowCat ' + $(if ($st.napcat.running) { '✓' } else { '✗' })
   $bd = '桥接 ' + $(if ($st.bridge.running) { '✓' } else { '✗' })
   $qq = 'QQ ' + $(if ($null -ne $b -and $b.snowluma.accountOnline) { '✓' } else { '✗' })
   $dsh = 'DSH ' + $(if ($null -ne $b -and $b.dshReady) { '✓' } else { '✗' })
@@ -383,7 +383,7 @@ function Update-Status {
 # ───────────────────────── 事件 ─────────────────────────
 $btnStart.Add_Click({ Start-Sequence })
 $btnStop.Add_Click({
-  $r = [System.Windows.Forms.MessageBox]::Show('确定要停止桥接 / NapCat / 控制中心并关闭本窗口吗？', '确认退出', 'YesNo', 'Question')
+  $r = [System.Windows.Forms.MessageBox]::Show('确定要停止桥接 / SnowCat / 控制中心并关闭本窗口吗？', '确认退出', 'YesNo', 'Question')
   if ($r -eq 'Yes') { Stop-Everything }
 })
 $btnOpen.Add_Click({ Open-Console })
