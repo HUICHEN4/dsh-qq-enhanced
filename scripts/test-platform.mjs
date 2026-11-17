@@ -249,7 +249,7 @@ test('⑥ 开启卡：NapCat 与 SnowLuma 各自开启/关闭、可同时开启�
     const on = await api(cc.port, T, 'POST', '/api/backends/napcat/on', {});
     assert.equal(on.body.ok, true, JSON.stringify(on.body));
     assert.ok(on.body.steps.some((t) => t.includes('已启动接口平台')));
-    assert.ok(on.body.steps.some((t) => t.includes('没有启动 NapCat')), `找不到 QQ 时不启动程序，只连接：${on.body.steps.join(' | ')}`);
+    assert.ok(on.body.steps.some((t) => t.includes('没有启动 SnowCat')), `找不到 QQ 时不启动程序，只连接：${on.body.steps.join(' | ')}`);
     assert.equal(cc.napcat.running, false);
     nap.heartbeat();
     let st = await until(async () => { nap.heartbeat(); const s = await api(cc.port, T, 'GET', '/api/state'); return s.body.platform.overview?.accounts?.find((a) => a.account === 'qq:10001' && a.health.ioReady) && s; }, 10_000, 'NapCat 账号就绪');

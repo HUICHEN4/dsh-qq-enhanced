@@ -147,7 +147,8 @@ test('页面：NapCat 区有版本、检查更新、下载页、设置（QQ.app 
   for (const purpose of ['napcat-qqapp', 'napcat-command', 'napcat-home']) assert.ok(html.includes(`'${purpose}'`), `浏览用途 ${purpose}`);
   assert.ok(!/api\('\/api\/pick', \{[^}]*title/.test(html), '页面不传标题等任意参数');
   const src = fs.readFileSync(path.join(root, 'src', 'launcher', 'napcat-launch.mjs'), 'utf8');
-  assert.ok(!/child_process|https?\.get|createWriteStream/.test(src), 'NapCat 更新检测不下载、不执行任何东西');
+  // child_process 只用于 killQQUnderDir 停残留 QQ；更新检测本身不联网、不下载（只放链接常量）
+  assert.ok(!/https?\.get\(|createWriteStream|\.download\(/i.test(src), 'NapCat 更新检测不下载');
 });
 
 const PNG = Buffer.from('89504e470d0a1a0a0000000d4948445200000001000000010806000000', 'hex');
@@ -197,9 +198,9 @@ test('控制中心：不在等扫码时二维码接口给 404，需要令牌；�
 
 test('页面：NapCat 程序区始终找得到（本机占位项 + 开启卡上的跳转按钮）；等扫码时卡片提示并显示二维码', () => {
   const html = fs.readFileSync(path.join(root, 'public', 'control-center.html'), 'utf8');
-  assert.match(html, /const LOCAL_NAP = \{ id: '本机 NapCat 程序', provider: 'napcat'/);
+  assert.match(html, /const LOCAL_NAP = \{ id: '本机 SnowCat 程序', provider: 'napcat'/);
   assert.match(html, /function goToNapcat\(\)[\s\S]*mainTabs\.select\('tab-platform'\)[\s\S]*platformTabs\.select\('ptab-instances'\)/);
-  assert.ok(html.includes('管理 NapCat 程序 →') && html.includes('查看登录二维码 →'));
+  assert.ok(html.includes('管理 SnowCat 程序 →') && html.includes('查看登录二维码 →'));
   assert.ok(html.includes('id="napQrPanel"') && html.includes('id="napQrImg"'));
   assert.match(html, /fetch\('\/api\/napcat\/qrcode', \{ headers: \{ 'x-control-token': token \} \}\)/, '图片请求带令牌头，不把令牌放进图片地址');
   assert.ok(html.includes('readAsDataURL'), '转成 data: 地址（CSP 只允许 data: 图片）');
@@ -276,5 +277,5 @@ test('页面接线：拿到新二维码时同时更新顶部面板和日志小�
   const fn = extractFn(html, 'renderNapQr');
   assert.match(fn, /\$\('napQrImg'\)\.src = url;[\s\S]*napLog\.addImage\(/);
   assert.match(fn, /napLog\.expireImages\('已过期，已换新二维码', q\.updatedAt\)/);
-  assert.match(fn, /napLog\.expireImages\(S\?\.napcat\?\.running \? '已登录或已失效' : 'NapCat 已停止'\)/);
+  assert.match(fn, /napLog\.expireImages\(S\?\.napcat\?\.running \? '已登录或已失效' : 'SnowCat 已停止'\)/);
 });
