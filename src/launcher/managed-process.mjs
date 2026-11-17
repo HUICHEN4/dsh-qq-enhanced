@@ -30,9 +30,10 @@ export function killTree(pid) {
  * @param {(line:string)=>string} [o.redact]
  * @param {(exit:{code:number|null,signal:string|null})=>boolean} [o.shouldRestart]  返回 true 才自动重启
  * @param {() => Promise<boolean>} [o.gracefulStop]  优雅停止（返回 true 表示已请求退出）
+ * @param {() => Promise<unknown>} [o.afterStop]  停止后的收尾（如清理脱离子进程树的 QQ 进程）
  * @param {() => number} [o.now]
  */
-export function createManagedProcess({ name, resolveLaunch, maxLines = 3000, logDir = null, redact = (s) => s, shouldRestart = () => false, gracefulStop = null, now = Date.now }) {
+export function createManagedProcess({ name, resolveLaunch, maxLines = 3000, logDir = null, redact = (s) => s, shouldRestart = () => false, gracefulStop = null, afterStop = null, now = Date.now }) {
   let child = null;
   let seq = 0;
   const lines = []; // { seq, time, stream, text }
@@ -117,7 +118,11 @@ export function createManagedProcess({ name, resolveLaunch, maxLines = 3000, log
 
   async function stop({ timeoutMs = 8000 } = {}) {
     if (restartTimer) { clearTimeout(restartTimer); restartTimer = null; }
-    if (!child) return { ok: true, already: true };
+    const cleanup = async () => {
+      if (!afterStop) return;
+      try { await afterStop(); } catch (error) { note(`停止收尾失败：${error?.message ?? error}`); }
+    };
+    if (!child) { await cleanup(); return { ok: true, already: true }; }
     stopping = true;
     const proc = child;
     const exited = new Promise((r) => proc.once('exit', () => r(true)));
@@ -127,12 +132,13 @@ export function createManagedProcess({ name, resolveLaunch, maxLines = 3000, log
       try { asked = await gracefulStop(); } catch {}
       if (asked) {
         const done = await Promise.race([exited, new Promise((r) => setTimeout(() => r(false), timeoutMs))]);
-        if (done) return { ok: true, graceful: true };
+        if (done) { await cleanup(); return { ok: true, graceful: true }; }
         note('优雅退出超时，改为强制结束');
       }
     }
     await killTree(proc.pid);
     const done = await Promise.race([exited, new Promise((r) => setTimeout(() => r(false), 5000))]);
+    await cleanup();
     return { ok: done, graceful: false };
   }
 

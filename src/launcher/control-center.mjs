@@ -29,7 +29,7 @@ import { fileURLToPath } from 'node:url';
 import { createManagedProcess } from './managed-process.mjs';
 import { inspectSnowLumaDir, snowlumaLaunchSpec, checkSnowLumaUpdate, migrateSnowLumaData, pickFolderDialog, migrationWarning, SNOWLUMA_RELEASES_PAGE } from './snowluma-install.mjs';
 import { redactCredentials, redactKnown } from '../lib/redact.mjs';
-import { inspectNapCat, napcatLaunchSpec, napcatDefaultHome, NAPCAT_DEFAULT_WEBUI_PORT, napcatFileVersion, napcatRuntimeVersion, checkNapCatUpdate, validateNapCatSettings, NAPCAT_RELEASES_PAGE, NAPCAT_MAC_INSTALLER_PAGE, napcatQrStatus, readNapCatQr, napcatLoggedIn } from './napcat-launch.mjs';
+import { inspectNapCat, napcatLaunchSpec, napcatDefaultHome, NAPCAT_DEFAULT_WEBUI_PORT, napcatFileVersion, napcatRuntimeVersion, checkNapCatUpdate, validateNapCatSettings, NAPCAT_RELEASES_PAGE, NAPCAT_MAC_INSTALLER_PAGE, napcatQrStatus, readNapCatQr, napcatLoggedIn, killQQUnderDir } from './napcat-launch.mjs';
 import { pickDialog } from './pick-dialog.mjs';
 // NapCat 是否已在别处运行：看它的 WebUI 端口（默认 6099，可在设置 napcatWebuiPort 改）
 import { atomicWriteJsonFile, readJsonFile } from '../lib/json-store.js';
@@ -268,6 +268,8 @@ export async function startControlCenter({ open = true, port: portOverride = nul
     redact,
     resolveLaunch: () => napcatLaunchSpec(inspectNapCat(settings)),
     shouldRestart: () => false, // 不自动拉起 NapCat
+    // SnowCat/QQ 由 Start-Process 拉起，脱离子进程树；停完 wrapper 后按 napcatHome 补杀遗留 QQ
+    afterStop: () => killQQUnderDir(napcatDefaultHome(settings)),
   });
 
   const platform = createManagedProcess({

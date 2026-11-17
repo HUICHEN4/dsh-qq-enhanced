@@ -10,6 +10,7 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { execFile } from 'node:child_process';
 
 export const NAPCAT_DEFAULT_WEBUI_PORT = 6099;
 
@@ -265,4 +266,18 @@ export function napcatLoggedIn(overview) {
     if ((inst.links ?? []).some((l) => l.state === 'open' && l.account)) return true;
   }
   return false;
+}
+
+/** 结束某个目录下的 QQ 进程（SnowCat/QQ 用 Start-Process 拉起，脱离子进程树，killTree 够不着）。 */
+export function killQQUnderDir(dir, { platform = process.platform, execFileImpl = execFile } = {}) {
+  if (platform !== 'win32' || !dir) return Promise.resolve({ ok: true, killed: 0 });
+  const ps = path.join(process.env.SystemRoot || 'C:\\Windows', 'System32', 'WindowsPowerShell', 'v1.0', 'powershell.exe');
+  const quoted = `'${String(dir).replace(/'/g, "''")}'`;
+  const script = `$d = ${quoted}; $p = @(Get-Process -Name QQ,QQEX -ErrorAction SilentlyContinue | Where-Object { $_.Path -and $_.Path.StartsWith($d, [System.StringComparison]::OrdinalIgnoreCase) }); $n = $p.Count; $p | Stop-Process -Force -ErrorAction SilentlyContinue; Write-Output $n`;
+  return new Promise((resolve) => {
+    execFileImpl(ps, ['-NoProfile', '-NonInteractive', '-Command', script], { windowsHide: true, timeout: 15000 }, (error, stdout) => {
+      if (error) return resolve({ ok: false, error: String(error.message ?? error), killed: 0 });
+      resolve({ ok: true, killed: Number(String(stdout).trim()) || 0 });
+    });
+  });
 }
